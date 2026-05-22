@@ -61,6 +61,7 @@ const ALL_MENUS = [
             { label: 'Property Listings', href: '/Pages/Admin/Properties' },
             { label: 'Property Assignments', href: '/Pages/Admin/Properties/Assignments', allowedRoles: MANAGER_UP },
             { label: 'Add New Property', href: '/Pages/Admin/Properties/Add', allowedRoles: MANAGER_UP },
+            { label: 'Renter Matching', href: '/Pages/Admin/Properties/RenterMatching', allowedRoles: MANAGER_UP },
             { label: 'Property Viewings', href: '/Pages/Admin/Properties/Viewings' },
             { label: 'Maintenance', href: '/Pages/Admin/Maintenance' },
             { label: 'Advertisements', href: '/Pages/Admin/Properties/Advertisement' },
@@ -72,7 +73,6 @@ const ALL_MENUS = [
         allowedRoles: ALL_STAFF,    // ✅ All staff can view clients
         items: [
             { label: 'Users Dashboard', href: '/Pages/Admin/Clients/Dashboard' },
-            { label: 'Client Assignment', href: '/Pages/Admin/Clients/ClientAssignments', allowedRoles: MANAGER_UP },
             { label: 'Branch Registrations', href: '/Pages/Admin/Clients/Registrations', allowedRoles: MANAGER_UP },
         ],
     },

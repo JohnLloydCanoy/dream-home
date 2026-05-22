@@ -206,6 +206,24 @@ export default function StaffDirectoryPage() {
     const [branches, setBranches] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
 
+    const formatSalary = (value) => {
+        if (value === null || value === undefined || value === '') return '';
+        const rawValue = String(value).trim();
+        const numberValue = Number(rawValue);
+        if (Number.isNaN(numberValue)) return rawValue;
+
+        const hasDecimal = rawValue.includes('.');
+        if (!hasDecimal) return `₱ ${numberValue.toLocaleString()}`;
+
+        const [, fraction = ''] = rawValue.split('.');
+        const fractionLength = fraction.length;
+        const formatted = numberValue.toLocaleString(undefined, {
+            minimumFractionDigits: fractionLength,
+            maximumFractionDigits: fractionLength
+        });
+        return `₱ ${formatted}${fractionLength === 0 && rawValue.endsWith('.') ? '.' : ''}`;
+    };
+
     useEffect(() => {
         apiClient('/branches/')
             .then((branchData) => setBranches(branchData.items || branchData))
@@ -360,7 +378,12 @@ export default function StaffDirectoryPage() {
                     .join(' ');
             }
         },
-        { key: 'salary', label: 'Salary', render: (val) => `Ph ${val}` },
+        {
+            key: 'salary',
+            label: 'Salary',
+            render: (val) => formatSalary(val),
+            exportValue: (row) => formatSalary(row.salary)
+        },
     ];
 
     return (

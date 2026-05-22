@@ -96,7 +96,7 @@ export default function BranchRegistrationsPage() {
                     <div className="text-sm">
                         <span className="font-medium">{req.pref_property_type || 'Any type'}</span>
                         <br />
-                        <span className="text-gray-500">Max Budget: £{req.max_monthly_rent || 'N/A'}</span>
+                        <span className="text-gray-500">Max Budget: ₱{req.max_monthly_rent || 'N/A'}</span>
                     </div>
                 );
             },
@@ -104,7 +104,7 @@ export default function BranchRegistrationsPage() {
                 if (row.role?.toLowerCase() !== 'renter') return 'Owner (N/A)';
                 const req = row.renter_requirements;
                 if (!req) return 'No requirements set';
-                return `${req.pref_property_type || 'Any type'} - Max Budget: £${req.max_monthly_rent || 'N/A'}`;
+                return `${req.pref_property_type || 'Any type'} - Max Budget: ₱${req.max_monthly_rent || 'N/A'}`;
             }
         },
         { 

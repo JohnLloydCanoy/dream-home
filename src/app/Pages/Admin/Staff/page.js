@@ -338,7 +338,7 @@ export default function StaffDirectoryPage() {
                 return `${branchInfo.branch_no} ${getBranchAddress(branchInfo)}`.trim();
             }
         },
-        { key: 'telephone_no', label: 'Contact No.' },
+        { key: 'telephone_no', label: 'Telephone No.' },
         {
             key: 'next_of_kin', label: 'Next of Kinship',
             render: (val, row) => {

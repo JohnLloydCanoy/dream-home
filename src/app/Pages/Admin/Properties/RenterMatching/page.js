@@ -7,6 +7,13 @@ import FormField from '@/components/ui/FormField';
 import Button from '@/components/ui/Button';
 import Dialog from '@/components/ui/Dialog';
 
+const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') return '-';
+    const num = parseFloat(value);
+    if (isNaN(num)) return value;
+    return new Intl.NumberFormat('en-PH', { style: 'decimal', minimumFractionDigits: 2 }).format(num);
+};
+
 export default function ClientAssignmentPage() {
     const [renters, setRenters] = useState([]);
     const [properties, setProperties] = useState([]);
@@ -136,7 +143,7 @@ export default function ClientAssignmentPage() {
         { 
             key: 'monthly_rent', 
             label: 'Monthly Rent',
-            render: (val) => <span className="font-bold text-green-700">£{val}</span>
+            render: (val) => <span className="font-medium text-gray-900">₱{formatCurrency(val)}</span>
         },
         { 
             key: 'actions', 
@@ -184,27 +191,27 @@ export default function ClientAssignmentPage() {
                 </div>
 
                 {selectedRenter ? (
-                    <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h3 className="text-lg font-bold text-blue-900 mb-1">
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">
                                 {selectedRenter.first_name} {selectedRenter.last_name}'s Requirements
                             </h3>
-                            <p className="text-sm text-blue-800">
+                            <p className="text-sm text-gray-600">
                                 {selectedRenter.renter_requirements?.general_comments || 'No general comments provided.'}
                             </p>
                         </div>
-                        <div className="flex gap-6 bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                        <div className="flex gap-6 bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-sm">
                             <div>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Property Type</p>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Property Type</p>
                                 <p className="text-lg font-semibold text-gray-900">
                                     {selectedRenter.renter_requirements?.pref_property_type || 'Any'}
                                 </p>
                             </div>
                             <div className="w-px bg-gray-200"></div>
                             <div>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Max Budget</p>
-                                <p className="text-lg font-bold text-green-600">
-                                    {selectedRenter.renter_requirements?.max_monthly_rent ? `£${selectedRenter.renter_requirements.max_monthly_rent}` : 'No Limit'}
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Max Budget</p>
+                                <p className="text-lg font-medium text-gray-900">
+                                    {selectedRenter.renter_requirements?.max_monthly_rent ? `₱${formatCurrency(selectedRenter.renter_requirements.max_monthly_rent)}` : 'No Limit'}
                                 </p>
                             </div>
                         </div>
@@ -220,8 +227,12 @@ export default function ClientAssignmentPage() {
             {selectedRenter && (
                 <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                        <div className="bg-green-100 text-green-800 p-1.5 rounded-lg">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                        <div className={`p-1.5 rounded-lg ${matchedProperties.length > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
+                            {matchedProperties.length > 0 ? (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                            ) : (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            )}
                         </div>
                         <h2 className="text-xl font-bold text-gray-900">
                             Found {matchedProperties.length} Perfect Matches

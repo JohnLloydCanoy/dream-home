@@ -67,6 +67,12 @@ export default function BranchRegistrationsPage() {
             render: (val, row) => <span className="font-semibold text-gray-900">{row.first_name} {row.last_name}</span>,
             exportValue: (row) => `${row.first_name} ${row.last_name}`
         },
+        {
+            key: 'telephone_no',
+            label: 'Telephone No.',
+            render: (val, row) => <span className="text-gray-700">{row.telephone_no || 'N/A'}</span>,
+            exportValue: (row) => row.telephone_no || 'N/A'
+        },
         { 
             key: 'role', 
             label: 'Role',

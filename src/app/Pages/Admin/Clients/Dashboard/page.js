@@ -214,7 +214,22 @@ function ClientModal({ isOpen, onClose, onSuccess, itemToEdit }) {
 
 export default function DashboardPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [assignmentFilter, setAssignmentFilter] = useState('all');
     const rbac = useRBAC();
+
+    const customRbac = {
+        ...rbac,
+        filterByBranch: (data) => {
+            let filtered = rbac.filterByBranch ? rbac.filterByBranch(data) : data;
+            if (assignmentFilter === 'unassigned') {
+                filtered = filtered.filter(row => !(row.registered_branch || row.registration_branch));
+            } else if (assignmentFilter === 'assigned') {
+                filtered = filtered.filter(row => Boolean(row.registered_branch || row.registration_branch));
+            }
+            return filtered;
+        }
+    };
+
     const getFullName = (row) => `${row.last_name}, ${row.first_name} ${MITrimmer(row.middle_name)}. ${row.suffixes || ''}`.trim();
 
     const tableColumns = [
@@ -312,12 +327,58 @@ export default function DashboardPage() {
             searchQuery={searchQuery}
             searchKeys={['client_no', 'name', 'registered_branch', 'registered_staff', 'date_registered', 'role']}
             getDeleteModalItemName={(client) => `${client.first_name} ${client.last_name} (${client.role})`}
-            rbac={rbac}
+            rbac={customRbac}
             nameKey={['last_name', 'first_name']}
             dateKey="date_registered"
             sortNameLabel="Client Name"
             sortDateLabel="Date Registered"
             pageSize={5}
+            renderTopContent={(dataList) => {
+                // Determine raw counts based on the underlying data *before* the filter is applied,
+                // or just show stats for currently viewed data. To be helpful, we show stats for the scoped branch data.
+                // CrudPageLayout passes the scopedData to renderTopContent.
+                // Wait, scopedData ALREADY has the filter applied. We should calculate totals differently or just accept
+                // that the cards show the *current filter* totals. Let's make it show current table stats.
+                const total = dataList.length;
+                const assigned = dataList.filter(row => Boolean(row.registered_branch || row.registration_branch)).length;
+                const unassigned = total - assigned;
+
+                return (
+                    <div className="space-y-4 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="bg-white border border-gray-200 rounded-xl p-4">
+                                <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">Viewing</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{total}</p>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-xl p-4">
+                                <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">Assigned</p>
+                                <p className="text-2xl font-bold text-green-700 mt-1">{assigned}</p>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-xl p-4">
+                                <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">Needs Assignment</p>
+                                <p className={`text-2xl font-bold mt-1 ${unassigned > 0 ? 'text-red-600' : 'text-gray-900'}`}>{unassigned}</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                            <div className="w-full sm:w-80">
+                                <FormField
+                                    label="Assignment Filter"
+                                    field="assignment_filter"
+                                    type="select"
+                                    value={assignmentFilter}
+                                    onChange={(field, val) => setAssignmentFilter(val)}
+                                    required={false}
+                                >
+                                    <option value="all">Show All Clients</option>
+                                    <option value="unassigned">Needs Assignment (Unregistered)</option>
+                                    <option value="assigned">Assigned Clients</option>
+                                </FormField>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }}
             renderHeaderMiddle={() => (
                 <SearchBar
                     value={searchQuery}

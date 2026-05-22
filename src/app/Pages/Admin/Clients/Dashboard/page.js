@@ -291,6 +291,12 @@ export default function DashboardPage() {
             searchValue: (row) => getStaffLabel(row.registered_staff || row.registration_staff)
         },
         {
+            key: 'telephone_no',
+            label: 'Telephone No.',
+            render: (val, row) => <span className="text-gray-700">{row.telephone_no || 'N/A'}</span>,
+            exportValue: (row) => row.telephone_no || 'N/A'
+        },
+        {
             key: 'date_registered', label: 'Date Registered',
             render: (val, row) => <span className="text-gray-700">{formatDate(row.date_registered)}</span>,
             exportValue: (row) => formatDate(row.date_registered),

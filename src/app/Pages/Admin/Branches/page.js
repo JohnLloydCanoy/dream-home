@@ -145,7 +145,8 @@ export default function BranchesPage() {
             ),
             exportValue: (row) => buildBranchAddress(row)
         },
-        { key: 'telephone_no', label: 'Contact No.' },
+        { key: 'telephone_no', label: 'Telephone No.' },
+        { key: 'fax_no', label: 'Fax No.' },
         {
             key: 'manager_no', label: 'Manager',
             render: (val) => (

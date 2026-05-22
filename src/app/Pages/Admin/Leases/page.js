@@ -218,6 +218,22 @@ export default function LeaseAgreementsPage() {
             render: (value) => formatCurrency(value),
             exportValue: (row) => formatCurrency(row.deposit)
         },
+        {
+            key: 'deposit_paid',
+            label: 'Deposit Status',
+            render: (value, row) => {
+                const isPaid = Boolean(row.deposit_paid);
+                const badgeClass = isPaid
+                    ? 'bg-green-100 text-green-700 border-green-200'
+                    : 'bg-amber-100 text-amber-700 border-amber-200';
+                return (
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${badgeClass}`}>
+                        {isPaid ? 'Paid' : 'Pending'}
+                    </span>
+                );
+            },
+            exportValue: (row) => (row.deposit_paid ? 'Paid' : 'Pending')
+        },
         { 
             key: 'payment_method', 
             label: 'Payment Method', 

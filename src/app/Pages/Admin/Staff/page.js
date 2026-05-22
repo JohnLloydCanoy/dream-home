@@ -339,6 +339,7 @@ export default function StaffDirectoryPage() {
             }
         },
         { key: 'telephone_no', label: 'Telephone No.' },
+        { key: 'nin', label: 'National Insurance No.' },
         {
             key: 'next_of_kin', label: 'Next of Kinship',
             render: (val, row) => {

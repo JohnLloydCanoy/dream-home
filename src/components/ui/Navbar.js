@@ -194,7 +194,7 @@ const ManagementSideBar = () => {
                                 </svg>
                             </button>
 
-                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMenu === menu.title ? 'max-h-48 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMenu === menu.title ? 'max-h-80 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
                                 <div className="pl-11 pr-3 py-1 space-y-1 border-l border-blue-800 ml-5 my-1">
                                     {visibleItems.map((item) => (
                                         <Link

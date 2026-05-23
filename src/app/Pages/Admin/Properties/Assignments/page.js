@@ -29,9 +29,9 @@ const getBranchLabel = (branch) => {
     if (!branch) return 'Unassigned';
     if (typeof branch === 'object') {
         const branchNo = branch.branch_no || '';
-        const city = branch.city || '';
-        if (branchNo && city) return `${branchNo} - ${city}`;
-        return branchNo || city || 'Unassigned';
+        const area = branch.area || '';
+        if (branchNo && area) return `${branchNo} - ${area}`;
+        return branchNo || area || 'Unassigned';
     }
     return branch;
 };
@@ -235,7 +235,7 @@ export default function PropertyAssignmentsPage() {
                         <option value="unassigned">Unassigned Branch</option>
                         {branches.map((branch) => (
                             <option key={branch.branch_no} value={branch.branch_no}>
-                                {branch.branch_no} - {branch.city}
+                                {branch.branch_no} - {branch.area}
                             </option>
                         ))}
                     </FormField>

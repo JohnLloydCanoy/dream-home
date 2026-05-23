@@ -168,7 +168,7 @@ export default function BranchesPage() {
             columns={tableColumns}
             searchQuery={searchQuery}
             searchKeys={['branch_no', 'street', 'area', 'city', 'postcode', 'telephone_no', 'manager_no']}
-            getDeleteModalItemName={(branch) => `Branch ${branch.branch_no} - ${branch.city}`}
+            getDeleteModalItemName={(branch) => `Branch ${branch.branch_no} - ${branch.area}`}
             rbac={branchRbac}
             nameKey="city"
             sortNameLabel="City"

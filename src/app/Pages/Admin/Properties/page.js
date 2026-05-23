@@ -43,14 +43,14 @@ const getPersonDisplay = (value, lookupMap, idField, fallbackName) => {
 const getBranchDisplay = (value, lookupMap) => {
     if (!value) return { name: 'Unassigned', id: '' };
     if (typeof value === 'object') {
-        const name = value.city || value.street || 'Branch';
+        const name = value.area || value.street || 'Branch';
         const id = value.branch_no || '';
         return { name: name || 'Branch', id };
     }
 
     const match = lookupMap?.get(value);
     if (match) {
-        const name = match.city || match.street || 'Branch';
+        const name = match.area || match.street || 'Branch';
         const id = match.branch_no || String(value);
         return { name: name || 'Branch', id };
     }
@@ -242,7 +242,7 @@ function PropertyModal({ isOpen, onClose, onSuccess, itemToEdit }) {
                         <option value="">— Select Branch —</option>
                         {branches.map((branch) => (
                             <option key={branch.branch_no} value={branch.branch_no}>
-                                {branch.branch_no} - {branch.city}
+                                {branch.branch_no} - {branch.area}
                             </option>
                         ))}
                     </FormField>
@@ -426,7 +426,7 @@ export default function PropertiesPage() {
             columns={tableColumns}
             searchQuery={searchQuery}
             searchKeys={['property_no', 'title', 'address', 'property_type', 'no_of_rooms', 'monthly_rent', 'status', 'owner_no', 'staff_no', 'branch_no', 'date_withdrawn']}
-            getDeleteModalItemName={(property) => `Property ${property.property_no} - ${property.city || ''}`.trim()}
+            getDeleteModalItemName={(property) => `Property ${property.property_no} - ${property.area || ''}`.trim()}
             rbac={rbac}
             nameKey="title"
             dateKey="date_withdrawn"

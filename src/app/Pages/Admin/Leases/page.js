@@ -10,6 +10,7 @@ import apiClient from '@/lib/apiClient';
 import { useForm } from '@/hooks/useForm';
 import { leaseValidators } from '@/lib/validator';
 import { useRBAC } from '@/hooks/useRBAC';
+import { useAuth } from '@/hooks/useAuth';
 
 // --- Helper Functions ---
 const normalizeList = (data) => data?.results || data?.items || data || [];
@@ -51,15 +52,24 @@ const getStartDate = (lease) => lease?.rent_start || lease?.start_date || 'N/A';
 const getEndDate = (lease) => lease?.rent_finish || lease?.end_date || 'N/A';
 
 // --- Form Modal Component ---
-function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit }) {
+function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
     const [properties, setProperties] = useState([]);
     const [renters, setRenters] = useState([]);
+    const isEditMode = Boolean(itemToEdit?.lease_no);
 
     useEffect(() => {
         if (!isOpen) return;
 
+        // ✅ FIX 1: When CREATING a lease, only show Available properties so staff
+        // can't accidentally link a new lease to an already-Rented property.
+        // When EDITING, show all properties so the current (now Rented) property
+        // is still visible and selectable.
+        const propertiesEndpoint = isEditMode
+            ? '/properties/'
+            : '/properties/?status=Available';
+
         Promise.all([
-            apiClient('/properties/').catch(err => {
+            apiClient(propertiesEndpoint).catch(err => {
                 console.error("Failed to load properties:", err);
                 return [];
             }),
@@ -99,6 +109,9 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit }) {
         payload.deposit = Number(payload.deposit);
         payload.property_no = payload.property || null;
         payload.renter_no = payload.renter || null;
+        // ✅ FIX 2: Automatically attach the logged-in staff member's ID so
+        // the 'arranged by' field is always populated without manual input.
+        if (staffNo) payload.staff_no = staffNo;
         delete payload.property;
         delete payload.renter;
         return payload;
@@ -171,16 +184,22 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit }) {
                         <option value="Cheque">Cheque</option>
                     </FormField>
                 </div>
-                <div className="mt-4 flex items-center gap-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                    <input
-                        type="checkbox"
-                        id="deposit_paid"
-                        name="deposit_paid"
-                        checked={formData.deposit_paid}
-                        onChange={(e) => handleChange({ target: { name: 'deposit_paid', value: e.target.checked } })}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor="deposit_paid" className="text-sm text-gray-700 font-medium">Deposit has been paid by renter</label>
+                <div className="mt-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-xs text-gray-500 uppercase tracking-wider font-bold">Deposit Status</span>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                                formData.deposit_paid 
+                                    ? 'bg-green-100 text-green-700 border-green-200' 
+                                    : 'bg-amber-100 text-amber-700 border-amber-200'
+                            }`}>
+                                {formData.deposit_paid ? 'Paid' : 'Pending'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                                (Updates automatically based on completed ledger payments)
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </section>
         </CrudFormModal>
@@ -191,6 +210,9 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit }) {
 export default function LeaseAgreementsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const rbac = useRBAC();
+    // ✅ FIX 2: Get the logged-in staff's ID from the auth context so we can
+    // pass it down to the modal and auto-populate the staff_no in payloads.
+    const { staffNo } = useAuth();
 
     const tableColumns = [
         {
@@ -334,6 +356,7 @@ export default function LeaseAgreementsPage() {
                     onClose={onClose}
                     onSuccess={onSuccess}
                     itemToEdit={itemToEdit}
+                    staffNo={staffNo}
                 />
             )}
         />

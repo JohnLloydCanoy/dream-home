@@ -59,8 +59,14 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit }) {
         if (!isOpen) return;
 
         Promise.all([
-            apiClient('/properties/'),
-            apiClient('/users/clients/?role=Renter')
+            apiClient('/properties/').catch(err => {
+                console.error("Failed to load properties:", err);
+                return [];
+            }),
+            apiClient('/users/clients/?role=Renter').catch(err => {
+                console.error("Failed to load renters:", err);
+                return [];
+            })
         ])
             .then(([propData, renterData]) => {
                 setProperties(normalizeList(propData));

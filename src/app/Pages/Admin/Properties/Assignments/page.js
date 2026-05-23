@@ -58,8 +58,14 @@ export default function PropertyAssignmentsPage() {
 
         try {
             const [propertyData, branchData] = await Promise.all([
-                apiClient('/properties/'),
-                apiClient('/branches/')
+                apiClient('/properties/').catch(err => {
+                    console.error('Failed to load properties:', err);
+                    return [];
+                }),
+                apiClient('/branches/').catch(err => {
+                    console.error('Failed to load branches:', err);
+                    return [];
+                })
             ]);
 
             setProperties(normalizeList(propertyData));

@@ -31,8 +31,14 @@ export default function ClientAssignmentPage() {
     useEffect(() => {
         setIsLoading(true);
         Promise.all([
-            apiClient('/users/clients/'),
-            apiClient('/properties/')
+            apiClient('/users/clients/').catch(err => {
+                console.error("Failed to load clients:", err);
+                return [];
+            }),
+            apiClient('/properties/').catch(err => {
+                console.error("Failed to load properties:", err);
+                return [];
+            })
         ])
         .then(([clientsData, propertiesData]) => {
             const allClients = clientsData?.results || clientsData?.items || clientsData || [];
@@ -44,7 +50,6 @@ export default function ClientAssignmentPage() {
             // We only match Available properties
             setProperties(allProps.filter(p => p.status?.toLowerCase() === 'available'));
         })
-        .catch(err => console.error("Error fetching data:", err))
         .finally(() => setIsLoading(false));
     }, []);
 

@@ -15,14 +15,19 @@ export default function BranchRegistrationsPage() {
     useEffect(() => {
         setIsLoading(true);
         Promise.all([
-            apiClient('/users/clients/'),
-            apiClient('/branches/')
+            apiClient('/users/clients/').catch(err => {
+                console.error("Failed to load clients:", err);
+                return [];
+            }),
+            apiClient('/branches/').catch(err => {
+                console.error("Failed to load branches:", err);
+                return [];
+            })
         ])
         .then(([clientsData, branchesData]) => {
             setClients(clientsData?.results || clientsData?.items || clientsData || []);
             setBranches(branchesData?.items || branchesData || []);
         })
-        .catch(err => console.error("Error fetching data:", err))
         .finally(() => setIsLoading(false));
     }, []);
 

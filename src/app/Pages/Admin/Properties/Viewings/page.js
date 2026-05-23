@@ -208,9 +208,18 @@ export default function PropertyViewingsPage() {
         let isActive = true;
 
         Promise.all([
-            apiClient('/properties/'),
-            apiClient('/users/clients/?role=Renter'),
-            apiClient('/users/staff/')
+            apiClient('/properties/').catch(err => {
+                console.error('Failed to load properties:', err);
+                return [];
+            }),
+            apiClient('/users/clients/?role=Renter').catch(err => {
+                console.error('Failed to load renters:', err);
+                return [];
+            }),
+            apiClient('/users/staff/').catch(err => {
+                console.error('Failed to load staff list:', err);
+                return [];
+            })
         ])
             .then(([propertiesData, rentersData, staffData]) => {
                 if (!isActive) return;

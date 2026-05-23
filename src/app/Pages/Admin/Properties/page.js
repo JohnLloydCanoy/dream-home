@@ -102,9 +102,18 @@ function PropertyModal({ isOpen, onClose, onSuccess, itemToEdit }) {
         if (!isOpen) return;
 
         Promise.all([
-            apiClient('/users/clients/?role=Owner'),
-            apiClient('/branches/'),
-            apiClient('/users/staff/')
+            apiClient('/users/clients/?role=Owner').catch(err => {
+                console.error('Failed to load owners:', err);
+                return [];
+            }),
+            apiClient('/branches/').catch(err => {
+                console.error('Failed to load branches:', err);
+                return [];
+            }),
+            apiClient('/users/staff/').catch(err => {
+                console.error('Failed to load staff list:', err);
+                return [];
+            })
         ])
             .then(([ownersData, branchData, staffData]) => {
                 setOwners(normalizeList(ownersData));
@@ -262,9 +271,18 @@ export default function PropertiesPage() {
         let isActive = true;
 
         Promise.all([
-            apiClient('/users/clients/?role=Owner'),
-            apiClient('/branches/'),
-            apiClient('/users/staff/')
+            apiClient('/users/clients/?role=Owner').catch(err => {
+                console.error('Failed to load owners:', err);
+                return [];
+            }),
+            apiClient('/branches/').catch(err => {
+                console.error('Failed to load branches:', err);
+                return [];
+            }),
+            apiClient('/users/staff/').catch(err => {
+                console.error('Failed to load staff list:', err);
+                return [];
+            })
         ])
             .then(([ownersData, branchData, staffData]) => {
                 if (!isActive) return;

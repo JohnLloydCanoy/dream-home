@@ -45,10 +45,20 @@ export default function CrudPageLayout({
     // If not provided, all actions are visible (backward-compatible).
     rbac,
 }) {
+    // ── Mounted guard — prevents SSR/client mismatch for RBAC-dependent UI
+    // localStorage (where auth lives) only exists on the client. We must wait
+    // until after mount before reading RBAC flags, otherwise the server renders
+    // with default values (full access) and the client renders with real values
+    // (restricted), causing React to throw a hydration mismatch error.
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => { setMounted(true); }, []);
+
     // ── RBAC defaults (full access when no rbac prop is passed) ───────────
-    const canCreate = rbac?.canCreate ?? true;
-    const canEdit   = rbac?.canEdit   ?? true;
-    const canDelete = rbac?.canDelete ?? true;
+    // Before mount: always fall back to the most restrictive safe defaults to
+    // match what the server would render (no auth context available).
+    const canCreate = mounted ? (rbac?.canCreate ?? true) : false;
+    const canEdit   = mounted ? (rbac?.canEdit   ?? true) : false;
+    const canDelete = mounted ? (rbac?.canDelete ?? true) : false;
     const filterByBranch = rbac?.filterByBranch ?? ((data) => data);
 
     // ── Data ──────────────────────────────────────────────────────────────────

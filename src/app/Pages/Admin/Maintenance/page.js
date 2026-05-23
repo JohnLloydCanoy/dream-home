@@ -167,8 +167,14 @@ export default function MaintenancePage() {
 		let isActive = true;
 
 		Promise.all([
-			apiClient('/properties/'),
-			apiClient('/users/staff/')
+			apiClient('/properties/').catch(err => {
+				console.error('Failed to load properties:', err);
+				return [];
+			}),
+			apiClient('/users/staff/').catch(err => {
+				console.error('Failed to load staff list:', err);
+				return [];
+			})
 		])
 			.then(([propertiesData, staffData]) => {
 				if (!isActive) return;

@@ -28,8 +28,14 @@ export default function ResourceAllocationFormModal({ isOpen, onClose, onSuccess
 
         // Load branches and staff
         Promise.all([
-            apiClient('/branches/'),
-            apiClient('/users/staff/')
+            apiClient('/branches/').catch(err => {
+                console.error("Failed to load branches:", err);
+                return [];
+            }),
+            apiClient('/users/staff/').catch(err => {
+                console.error("Failed to load staff list:", err);
+                return [];
+            })
         ]).then(([branchData, staffData]) => {
             setBranches(branchData.results || branchData.items || branchData || []);
             setStaffList(staffData.results || staffData.items || staffData || []);

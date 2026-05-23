@@ -80,7 +80,16 @@ function ClientModal({ isOpen, onClose, onSuccess, itemToEdit }) {
 
     useEffect(() => {
         if (!isOpen) return;
-        Promise.all([apiClient('/branches/'), apiClient('/users/staff/')])
+        Promise.all([
+            apiClient('/branches/').catch(err => {
+                console.error('Failed to load branches:', err);
+                return [];
+            }),
+            apiClient('/users/staff/').catch(err => {
+                console.error('Failed to load staff list:', err);
+                return [];
+            })
+        ])
             .then(([branchData, staffData]) => {
                 setBranches(branchData?.items || branchData || []);
                 setStaffList(staffData?.results || staffData?.items || staffData || []);

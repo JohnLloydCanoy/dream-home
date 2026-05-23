@@ -162,7 +162,7 @@ export default function BranchRegistrationsPage() {
                         <option value="all">-- All Registered Clients --</option>
                         {branches.map(b => (
                             <option key={b.branch_no} value={b.branch_no}>
-                                {b.branch_no} - {b.city}
+                                {b.branch_no} - {b.area}
                             </option>
                         ))}
                     </FormField>

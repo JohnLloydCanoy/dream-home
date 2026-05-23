@@ -160,7 +160,7 @@ export default function ResourceAllocationFormModal({ isOpen, onClose, onSuccess
                         <FormField label="Branch" field="branch" type="select" value={formData.branch} onChange={handleChange} required={true}>
                             <option value="">— Select Branch —</option>
                             {branches.map(b => (
-                                <option key={b.branch_no} value={b.branch_no}>{b.branch_no} - {b.city}</option>
+                                <option key={b.branch_no} value={b.branch_no}>{b.branch_no} - {b.area}</option>
                             ))}
                         </FormField>
 

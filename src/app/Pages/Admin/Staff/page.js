@@ -167,7 +167,7 @@ function StaffModal({ isOpen, onClose, onSuccess, itemToEdit }) {
                     <FormField label="Salary" field="salary" type="number" value={formData.salary} onChange={handleChange} error={errors.salary} />
                     <FormField label="Branch" field="branch" type="select" value={formData.branch} onChange={handleChange} error={errors.branch}>
                         <option value="">— Select Branch —</option>
-                        {branches.map(b => <option key={b.branch_no} value={b.branch_no}>{b.city}</option>)}
+                        {branches.map(b => <option key={b.branch_no} value={b.branch_no}>{b.area}</option>)}
                     </FormField>
                     <FormField label="Supervisor" field="supervisor" type="select" value={formData.supervisor} onChange={handleChange} error={errors.supervisor} required={false}>
                         <option value="">— None —</option>

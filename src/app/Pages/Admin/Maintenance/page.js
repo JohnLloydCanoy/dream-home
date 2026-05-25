@@ -87,6 +87,16 @@ const getStatusBadge = (status) => {
 };
 
 function InspectionModal({ isOpen, onClose, onSuccess, itemToEdit, properties, staffList }) {
+	const inspectorOptions = React.useMemo(() => {
+		return staffList.filter((staff) => {
+			const isStaff = staff.position === 'Staff';
+			const isCurrentlyAssigned = 
+				itemToEdit?.staff_no === staff.staff_no || 
+				(itemToEdit?.staff && (itemToEdit.staff === staff.staff_no || itemToEdit.staff.staff_no === staff.staff_no));
+			return isStaff || isCurrentlyAssigned;
+		});
+	}, [staffList, itemToEdit]);
+
 	const { formData, errors, handleChange, validate, reset } = useForm({
 		property_no: toId(itemToEdit?.property_no || itemToEdit?.property, 'property_no'),
 		staff_no: toId(itemToEdit?.staff_no || itemToEdit?.staff, 'staff_no'),
@@ -137,7 +147,7 @@ function InspectionModal({ isOpen, onClose, onSuccess, itemToEdit, properties, s
 					</FormField>
 					<FormField label="Inspector" field="staff_no" type="select" value={formData.staff_no} onChange={handleChange} error={errors.staff_no}>
 						<option value="">-- Select Staff --</option>
-						{staffList.map((staff) => (
+						{inspectorOptions.map((staff) => (
 							<option key={staff.staff_no} value={staff.staff_no}>
 								{staff.first_name} {staff.last_name} ({staff.staff_no})
 							</option>

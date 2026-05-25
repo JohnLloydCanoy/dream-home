@@ -115,13 +115,21 @@ export default function Home() {
 
               <hr className="my-5 border-gray-200" />
 
-              <div className="flex justify-center pb-2">
+              {/* Added the Track Application button here, next to Apply Here */}
+              <div className="flex flex-col sm:flex-row justify-center gap-3 pb-2">
                 <button
                   type="button"
-                  className="bg-[#E11553] hover:bg-[#C11246] text-white font-bold text-[17px] py-3 px-6 rounded-md transition-colors"
+                  className="bg-[#E11553] hover:bg-[#C11246] text-white font-bold text-[17px] py-3 px-6 rounded-md transition-colors w-full sm:w-auto"
                   onClick={() => setIsHiringOpen(true)}
                 >
                   Apply Here
+                </button>
+                <button
+                  type="button"
+                  className="bg-white hover:bg-gray-50 text-[#E11553] border border-[#E11553] font-bold text-[17px] py-3 px-6 rounded-md transition-colors w-full sm:w-auto"
+                  onClick={() => router.push("/Pages/Hiring")}
+                >
+                  Track Application
                 </button>
               </div>
             </form>

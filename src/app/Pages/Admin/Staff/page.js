@@ -400,7 +400,6 @@ export default function StaffDirectoryPage() {
         <CrudPageLayout
             title="Staff Directory"
             subtitle="Manage DreamHome employees, roles, and kinship profiles."
-            addButtonLabel="+ Enroll Staff"
             endpoint="/users/staff/"
             keyField="staff_no"
             columns={tableColumns}
@@ -412,6 +411,7 @@ export default function StaffDirectoryPage() {
             sortNameLabel="Staff Name"
             sortDateLabel="Date Joined"
             pageSize={5}
+            rbac={{ canCreate: false }}
             renderHeaderMiddle={() => (
                 <SearchBar
                     value={searchQuery}
@@ -434,14 +434,15 @@ export default function StaffDirectoryPage() {
                 />
             )}
             
-            // Render the local modal component defined above
             renderFormModal={({ isOpen, onClose, onSuccess, itemToEdit }) => (
-                <StaffModal 
-                    isOpen={isOpen} 
-                    onClose={onClose} 
-                    onSuccess={onSuccess} 
-                    itemToEdit={itemToEdit} 
-                />
+                itemToEdit ? (
+                    <StaffModal 
+                        isOpen={isOpen} 
+                        onClose={onClose} 
+                        onSuccess={onSuccess} 
+                        itemToEdit={itemToEdit} 
+                    />
+                ) : null
             )}
         />
     );

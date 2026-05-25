@@ -105,7 +105,24 @@ function PaymentModal({ isOpen, onClose, onSuccess, preselectedLease, itemToEdit
 export default function PaymentsBalancesPage() {
     const [selectedLease, setSelectedLease] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [allPayments, setAllPayments] = useState([]);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const rbac = useRBAC();
+
+    const triggerRefresh = () => {
+        setRefreshTrigger(prev => prev + 1);
+    };
+
+    const handleDeletePayment = async (paymentNo) => {
+        if (!confirm(`Are you sure you want to delete payment ${paymentNo}?`)) return;
+        try {
+            await apiClient(`/payments/${paymentNo}/`, { method: 'DELETE' });
+            setSelectedLease(null); // Clear selected state to refresh
+            triggerRefresh();
+        } catch (err) {
+            alert(err.message || 'Failed to delete payment');
+        }
+    };
 
     // 🌟 Custom Fetch Logic: Merges Leases and Payments into one array for the table
     const fetchLedgerData = async () => {
@@ -122,6 +139,7 @@ export default function PaymentsBalancesPage() {
 
         const leases = normalizeList(leaseData);
         const payments = normalizeList(paymentData);
+        setAllPayments(payments);
         const paidByLease = {};
 
         payments.forEach((payment) => {
@@ -202,6 +220,7 @@ export default function PaymentsBalancesPage() {
             subtitle="Log rental payments and monitor outstanding balances per lease agreement."
             addButtonLabel="+ Log Payment"
             keyField="lease_no"
+            endpoint={`/leases?refresh=${refreshTrigger}`}
             columns={tableColumns}
             fetchData={fetchLedgerData} // 👈 Pass our custom merger function
             onRowClick={setSelectedLease} // 👈 Tracks row selection for the banner
@@ -259,6 +278,10 @@ export default function PaymentsBalancesPage() {
                     totalOutstanding: leaseBalances.reduce((sum, l) => sum + l.outstanding_balance, 0),
                 };
 
+                const leasePayments = selectedLease
+                    ? allPayments.filter(p => toLeaseNo(p.lease) === selectedLease.lease_no)
+                    : [];
+
                 return (
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -281,8 +304,66 @@ export default function PaymentsBalancesPage() {
                         </div>
 
                         {selectedLease && (
-                            <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3 text-sm mb-4">
-                                Selected Lease: <strong>{selectedLease.lease_no}</strong> ({getRenterLabel(selectedLease.renter_no)})
+                            <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-4 mb-4">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 className="font-bold text-sm text-[#002147]">
+                                            Selected Lease: <span className="font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-xs">{selectedLease.lease_no}</span>
+                                        </h4>
+                                        <p className="text-xs text-gray-600 mt-1">
+                                            Renter: {getRenterLabel(selectedLease.renter_no)}
+                                        </p>
+                                    </div>
+                                    <button 
+                                        className="text-gray-500 hover:text-gray-700 text-xs font-semibold"
+                                        onClick={() => setSelectedLease(null)}
+                                    >
+                                        Close Details
+                                    </button>
+                                </div>
+
+                                <div className="bg-white border border-gray-200 rounded-lg p-3">
+                                    <h5 className="font-bold text-[10px] uppercase tracking-wide text-gray-400 mb-2">
+                                        Logged Payments ({leasePayments.length})
+                                    </h5>
+                                    {leasePayments.length === 0 ? (
+                                        <p className="text-gray-500 text-xs py-1">No payments recorded for this lease yet.</p>
+                                    ) : (
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-100 text-xs">
+                                                <thead>
+                                                    <tr className="text-left text-gray-400 font-medium">
+                                                        <th className="py-2">Payment No</th>
+                                                        <th className="py-2">Date</th>
+                                                        <th className="py-2">Method</th>
+                                                        <th className="py-2">Amount</th>
+                                                        {(rbac?.canDelete ?? true) && <th className="py-2 text-right">Actions</th>}
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-50">
+                                                    {leasePayments.map(p => (
+                                                        <tr key={p.payment_no} className="hover:bg-gray-50">
+                                                            <td className="py-2 font-mono text-gray-600">{p.payment_no}</td>
+                                                            <td className="py-2 text-gray-700">{p.payment_date}</td>
+                                                            <td className="py-2 text-gray-700">{p.payment_method}</td>
+                                                            <td className="py-2 text-green-700 font-semibold">{formatCurrency(p.amount_paid)}</td>
+                                                            {(rbac?.canDelete ?? true) && (
+                                                                <td className="py-2 text-right">
+                                                                    <button
+                                                                        onClick={() => handleDeletePayment(p.payment_no)}
+                                                                        className="text-red-600 hover:text-red-900 font-bold ml-2 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                </td>
+                                                            )}
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </>

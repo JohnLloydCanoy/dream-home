@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { loginAdmin, logoutAdmin } from "../lib/authService";
+import HiringModal from "@/components/ui/Application/hiringmodal";
 
 export default function Home() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function Home() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isHiringOpen, setIsHiringOpen] = useState(false);
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -117,6 +119,7 @@ export default function Home() {
                 <button
                   type="button"
                   className="bg-[#E11553] hover:bg-[#C11246] text-white font-bold text-[17px] py-3 px-6 rounded-md transition-colors"
+                  onClick={() => setIsHiringOpen(true)}
                 >
                   Apply Here
                 </button>
@@ -130,6 +133,8 @@ export default function Home() {
         </div>
 
       </div>
+
+      <HiringModal isOpen={isHiringOpen} onClose={() => setIsHiringOpen(false)} />
     </div>
   );
 }

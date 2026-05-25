@@ -283,6 +283,26 @@ export default function LeaseAgreementsPage() {
             exportValue: (row) => formatCurrency(row.deposit)
         },
         {
+            key: 'change_balance',
+            label: 'Change / Balance',
+            render: (_, row) => {
+                const rent = Number(row.monthly_rent || 0);
+                const deposit = Number(row.deposit || 0);
+                const diff = deposit - rent;
+                if (diff === 0) return <span className="text-gray-500">—</span>;
+                return (
+                    <span className={`font-medium ${diff < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {diff < 0 ? 'Balance: ' : 'Change: '}{formatCurrency(Math.abs(diff))}
+                    </span>
+                );
+            },
+            exportValue: (row) => {
+                const diff = Number(row.deposit || 0) - Number(row.monthly_rent || 0);
+                if (diff === 0) return '0.00';
+                return diff < 0 ? `Balance: ${Math.abs(diff)}` : `Change: ${Math.abs(diff)}`;
+            }
+        },
+        {
             key: 'deposit_paid',
             label: 'Deposit Status',
             render: (value, row) => {

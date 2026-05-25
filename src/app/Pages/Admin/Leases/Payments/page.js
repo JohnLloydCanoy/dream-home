@@ -162,7 +162,7 @@ export default function PaymentsBalancesPage() {
                 ...lease,
                 rent_due: rentDue,
                 paid_so_far: leasePayment.amountPaid,
-                outstanding_balance: outstanding > 0 ? outstanding : 0,
+                outstanding_balance: outstanding,
                 payment_count: leasePayment.paymentCount,
                 last_payment_date: leasePayment.lastPaymentDate || 'No payment yet'
             };
@@ -204,7 +204,7 @@ export default function PaymentsBalancesPage() {
         { 
             key: 'outstanding_balance', 
             label: 'Balance', 
-            render: (val) => <span className={`font-semibold ${val > 0 ? 'text-red-700' : 'text-green-700'}`}>{formatCurrency(val)}</span>,
+            render: (val) => <span className={`font-semibold ${val > 0 ? 'text-red-700' : 'text-green-700'}`}>{val < 0 ? 'Overpaid: ' : ''}{formatCurrency(Math.abs(val))}</span>,
             exportValue: (row) => formatCurrency(row.outstanding_balance)
         },
         { 
@@ -275,7 +275,7 @@ export default function PaymentsBalancesPage() {
                 const summary = {
                     totalRentDue: leaseBalances.reduce((sum, l) => sum + l.rent_due, 0),
                     totalPaid: leaseBalances.reduce((sum, l) => sum + l.paid_so_far, 0),
-                    totalOutstanding: leaseBalances.reduce((sum, l) => sum + l.outstanding_balance, 0),
+                    totalOutstanding: leaseBalances.reduce((sum, l) => sum + (l.outstanding_balance > 0 ? l.outstanding_balance : 0), 0),
                 };
 
                 const leasePayments = selectedLease

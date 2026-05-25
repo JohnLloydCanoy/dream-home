@@ -211,11 +211,19 @@ function PropertyModal({ isOpen, onClose, onSuccess, itemToEdit }) {
                     <FormField label="Rooms" field="no_of_rooms" type="number" value={formData.no_of_rooms} onChange={handleChange} error={errors.no_of_rooms} />
                     <FormField label="Monthly Rent" field="monthly_rent" type="number" value={formData.monthly_rent} onChange={handleChange} error={errors.monthly_rent} />
                     <FormField label="Status" field="status" type="select" value={formData.status} onChange={handleChange} error={errors.status}>
-                        {propertyStatusOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
-                            </option>
-                        ))}
+                        {propertyStatusOptions.map((option) => {
+                            const isRentedOption = option.value === 'Rented';
+                            const isCurrentlyRented = itemToEdit?.status === 'Rented';
+                            return (
+                                <option 
+                                    key={option.value} 
+                                    value={option.value}
+                                    disabled={isRentedOption && !isCurrentlyRented}
+                                >
+                                    {option.label} {isRentedOption && !isCurrentlyRented ? '(Requires Lease)' : ''}
+                                </option>
+                            );
+                        })}
                     </FormField>
                     <FormField
                         label="Date Withdrawn"

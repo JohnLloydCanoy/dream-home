@@ -69,8 +69,9 @@ function parseResponse(response, data) {
 
 // ─── Public API Client ───────────────────────────────────────────────
 async function apiClient(endpoint, options = {}) {
-    const token = localStorage.getItem('adminAccessToken');
-    let response = await makeRequest(endpoint, options, token);
+    const { skipAuth = false, ...requestOptions } = options;
+    const token = skipAuth ? null : localStorage.getItem('adminAccessToken');
+    let response = await makeRequest(endpoint, requestOptions, token);
 
     // Handle 204 No Content (e.g. successful DELETE)
     if (response.status === 204) {
@@ -89,7 +90,7 @@ async function apiClient(endpoint, options = {}) {
     let data = await response.json();
 
     // ── Auto-refresh on 401 ──────────────────────────────────────────
-    if (response.status === 401) {
+    if (!skipAuth && response.status === 401) {
         try {
             // Use lock so only one refresh happens at a time
             if (!isRefreshing) {
@@ -101,7 +102,7 @@ async function apiClient(endpoint, options = {}) {
             refreshPromise = null;
 
             // Retry the original request with the fresh token
-            response = await makeRequest(endpoint, options, newToken);
+            response = await makeRequest(endpoint, requestOptions, newToken);
             const retryContentType = response.headers.get('content-type');
             if (!retryContentType || !retryContentType.includes('application/json')) {
                 throw new Error('Server returned a non-JSON response on retry.');

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { loginAdmin, logoutAdmin } from "../lib/authService";
+import HiringModal from "@/components/ui/Application/hiringmodal";
 
 export default function Home() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function Home() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isHiringOpen, setIsHiringOpen] = useState(false);
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -113,12 +115,21 @@ export default function Home() {
 
               <hr className="my-5 border-gray-200" />
 
-              <div className="flex justify-center pb-2">
+              {/* Added the Track Application button here, next to Apply Here */}
+              <div className="flex flex-col sm:flex-row justify-center gap-3 pb-2">
                 <button
                   type="button"
-                  className="bg-[#E11553] hover:bg-[#C11246] text-white font-bold text-[17px] py-3 px-6 rounded-md transition-colors"
+                  className="bg-[#E11553] hover:bg-[#C11246] text-white font-bold text-[17px] py-3 px-6 rounded-md transition-colors w-full sm:w-auto"
+                  onClick={() => setIsHiringOpen(true)}
                 >
-                  Request Staff Access
+                  Apply Here
+                </button>
+                <button
+                  type="button"
+                  className="bg-white hover:bg-gray-50 text-[#E11553] border border-[#E11553] font-bold text-[17px] py-3 px-6 rounded-md transition-colors w-full sm:w-auto"
+                  onClick={() => router.push("/Pages/Hiring")}
+                >
+                  Track Application
                 </button>
               </div>
             </form>
@@ -130,6 +141,8 @@ export default function Home() {
         </div>
 
       </div>
+
+      <HiringModal isOpen={isHiringOpen} onClose={() => setIsHiringOpen(false)} />
     </div>
   );
 }

@@ -55,6 +55,7 @@ const getEndDate = (lease) => lease?.rent_finish || lease?.end_date || 'N/A';
 function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
     const [properties, setProperties] = useState([]);
     const [renters, setRenters] = useState([]);
+    const [viewings, setViewings] = useState([]); // ✅ Added viewings state
     const isEditMode = Boolean(itemToEdit?.lease_no);
 
     useEffect(() => {
@@ -76,14 +77,22 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
             apiClient('/users/clients/?role=Renter').catch(err => {
                 console.error("Failed to load renters:", err);
                 return [];
+            }),
+            apiClient('/properties/viewings/').catch(err => {
+                console.error("Failed to load viewings:", err);
+                return [];
             })
         ])
-            .then(([propData, renterData]) => {
+            .then(([propData, renterData, viewingsData]) => {
                 setProperties(normalizeList(propData));
                 setRenters(normalizeList(renterData));
+                
+                // Keep only approved viewings for smart filtering
+                const approvedViewings = normalizeList(viewingsData).filter(v => v.status === 'Approved');
+                setViewings(approvedViewings);
             })
             .catch(err => console.error("Failed to load options:", err));
-    }, [isOpen]);
+    }, [isOpen, isEditMode]);
 
     const { formData, errors, handleChange, validate, reset } = useForm({
         property: toId(itemToEdit?.property_no, 'property_no'),
@@ -101,6 +110,34 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
         if (isOpen) reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [itemToEdit?.lease_no, isOpen]);
+
+    // ✅ Smart Feature 1: Filter available properties and renters based on viewings
+    const availableProperties = formData.renter
+        ? properties.filter(p => viewings.some(v => 
+            toId(v.renter_no, 'client_no') === formData.renter && 
+            toId(v.property_no, 'property_no') === p.property_no
+          ))
+        : properties;
+
+    const availableRenters = formData.property
+        ? renters.filter(r => viewings.some(v => 
+            toId(v.property_no, 'property_no') === formData.property && 
+            toId(v.renter_no, 'client_no') === r.client_no
+          ))
+        : renters;
+
+    // ✅ Smart Feature 2: Auto-fill rent when property changes
+    const handlePropertyChange = (field, value) => {
+        handleChange(field, value); // Standard handling
+        
+        if (field === 'property' && value) {
+            const selectedProp = properties.find(p => p.property_no === value);
+            if (selectedProp && selectedProp.monthly_rent) {
+                // Instantly update the monthly rent field!
+                handleChange('monthly_rent', selectedProp.monthly_rent);
+            }
+        }
+    };
 
     const formatPayload = (data) => {
         const payload = { ...data };
@@ -137,9 +174,9 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
                     Parties & Property
                 </h3>
                 <div className="grid grid-cols-1 gap-4">
-                    <FormField label="Property" field="property" type="select" value={formData.property} onChange={handleChange} error={errors.property}>
+                    <FormField label="Property" field="property" type="select" value={formData.property} onChange={handlePropertyChange} error={errors.property}>
                         <option value="">— Select Property —</option>
-                        {properties.map(p => (
+                        {availableProperties.map(p => (
                             <option key={p.property_no} value={p.property_no}>
                                 {getPropertyLabel(p)}
                             </option>
@@ -147,7 +184,7 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
                     </FormField>
                     <FormField label="Renter" field="renter" type="select" value={formData.renter} onChange={handleChange} error={errors.renter}>
                         <option value="">— Select Renter —</option>
-                        {renters.map(r => (
+                        {availableRenters.map(r => (
                             <option key={r.client_no} value={r.client_no}>
                                 {getRenterLabel(r)}
                             </option>

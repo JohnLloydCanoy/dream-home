@@ -50,9 +50,9 @@ const getBranchLabel = (branch) => {
     if (!branch) return 'Unregistered';
     if (typeof branch === 'object') {
         const branchNo = branch.branch_no || '';
-        const city = branch.city || '';
-        if (branchNo && city) return `${branchNo} - ${city}`;
-        return branchNo || city || 'Unregistered';
+        const area = branch.area || '';
+        if (branchNo && area) return `${branchNo} - ${area}`;
+        return branchNo || area || 'Unregistered';
     }
     return branch;
 };
@@ -80,7 +80,16 @@ function ClientModal({ isOpen, onClose, onSuccess, itemToEdit }) {
 
     useEffect(() => {
         if (!isOpen) return;
-        Promise.all([apiClient('/branches/'), apiClient('/users/staff/')])
+        Promise.all([
+            apiClient('/branches/').catch(err => {
+                console.error('Failed to load branches:', err);
+                return [];
+            }),
+            apiClient('/users/staff/').catch(err => {
+                console.error('Failed to load staff list:', err);
+                return [];
+            })
+        ])
             .then(([branchData, staffData]) => {
                 setBranches(branchData?.items || branchData || []);
                 setStaffList(staffData?.results || staffData?.items || staffData || []);
@@ -187,7 +196,7 @@ function ClientModal({ isOpen, onClose, onSuccess, itemToEdit }) {
                         <option value="">— Unregistered —</option>
                         {branches.map((branch) => (
                             <option key={branch.branch_no} value={branch.branch_no}>
-                                {branch.branch_no} - {branch.city}
+                                {branch.branch_no} - {branch.area}
                             </option>
                         ))}
                     </FormField>

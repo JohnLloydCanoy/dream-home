@@ -90,17 +90,17 @@ export function useRBAC() {
             branchCode,
 
             // ── Capability flags ──────────────────────────────────────
-            /** Can add new records? Admin + Manager */
-            canCreate: isAdmin || isManager,
+            /** Can add new records? Admin + Manager + Supervisor */
+            canCreate: isAdmin || isManager || isSupervisor,
 
-            /** Can edit existing records? Admin + Manager + Staff/Secretary (own branch) */
-            canEdit: isAdmin || isManager || isStaffOrSecretary,
+            /** Can edit existing records? All staff (scoped to their branch) */
+            canEdit: isAdmin || isManager || isSupervisor || isStaffOrSecretary,
 
             /** Can delete records? Admin only */
             canDelete: isAdmin,
 
-            /** Pure read-only? (Supervisors: they see their branch but can't mutate) */
-            isReadOnly: isSupervisor,
+            /** Pure read-only? (No one is purely read-only anymore, staff needs to update things) */
+            isReadOnly: false,
 
             /** Is ADMIN? */
             isAdmin,

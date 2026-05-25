@@ -63,9 +63,15 @@ export default function AdminPage() {
 
         try {
             const [propertiesData, leasesData, clientsData, viewingsData] = await Promise.all([
-                apiClient('/properties/'),
-                apiClient('/leases/'),
-                apiClient('/users/client/').catch(() => apiClient('/users/clients/')),
+                apiClient('/properties/').catch(err => {
+                    console.error('Failed to load properties for dashboard:', err);
+                    return [];
+                }),
+                apiClient('/leases/').catch(err => {
+                    console.error('Failed to load leases for dashboard:', err);
+                    return [];
+                }),
+                apiClient('/users/client/').catch(() => apiClient('/users/clients/')).catch(() => []),
                 apiClient('/properties/viewings/').catch(() => [])
             ]);
 

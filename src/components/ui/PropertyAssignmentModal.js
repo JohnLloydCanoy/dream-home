@@ -91,7 +91,7 @@ export default function PropertyAssignmentModal({ isOpen, onClose, onSuccess, pr
                             <option value="">— Select a Branch —</option>
                             {branches.map(b => (
                                 <option key={b.branch_no} value={b.branch_no}>
-                                    {b.branch_no} - {b.city}
+                                    {b.branch_no} - {b.area}
                                 </option>
                             ))}
                         </FormField>

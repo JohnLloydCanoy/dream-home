@@ -110,8 +110,14 @@ export default function PaymentsBalancesPage() {
     // 🌟 Custom Fetch Logic: Merges Leases and Payments into one array for the table
     const fetchLedgerData = async () => {
         const [leaseData, paymentData] = await Promise.all([
-            apiClient('/leases/'),
-            apiClient('/payments/')
+            apiClient('/leases/').catch(err => {
+                console.error('Failed to load leases:', err);
+                return [];
+            }),
+            apiClient('/payments/').catch(err => {
+                console.error('Failed to load payments:', err);
+                return [];
+            })
         ]);
 
         const leases = normalizeList(leaseData);

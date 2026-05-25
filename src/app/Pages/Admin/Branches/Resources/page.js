@@ -26,8 +26,8 @@ const getStaffName = (staff) => {
 const getBranchLabel = (branch) => {
 	if (!branch) return 'Unassigned';
 	if (typeof branch === 'object') {
-		if (branch.branch_no && branch.city) return `${branch.branch_no} - ${branch.city}`;
-		return branch.branch_no || branch.city || 'Unassigned';
+		if (branch.branch_no && branch.area) return `${branch.branch_no} - ${branch.area}`;
+		return branch.branch_no || branch.area || 'Unassigned';
 	}
 	return branch;
 };

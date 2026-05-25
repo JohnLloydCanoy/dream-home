@@ -33,9 +33,9 @@ const getBranchLabel = (branch) => {
 	if (!branch) return 'Unassigned';
 	if (typeof branch === 'object') {
 		const branchNo = branch.branch_no || '';
-		const city = branch.city || '';
-		if (branchNo && city) return `${branchNo} - ${city}`;
-		return branchNo || city || 'Unassigned';
+		const area = branch.area || '';
+		if (branchNo && area) return `${branchNo} - ${area}`;
+		return branchNo || area || 'Unassigned';
 	}
 	return branch;
 };

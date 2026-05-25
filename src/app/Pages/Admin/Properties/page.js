@@ -482,7 +482,7 @@ export default function PropertiesPage() {
                         window.location.reload();
                     } catch (err) {
                         console.error('Failed to approve property:', err);
-                        alert('Failed to approve property. Please try again.');
+                        alert(err.message || 'Failed to approve property. Please try again.');
                     }
                 };
 
@@ -500,7 +500,7 @@ export default function PropertiesPage() {
                         window.location.reload();
                     } catch (err) {
                         console.error('Failed to reject property:', err);
-                        alert('Failed to reject property. Please try again.');
+                        alert(err.message || 'Failed to reject property. Please try again.');
                     }
                 };
 

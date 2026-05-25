@@ -10,6 +10,7 @@ import apiClient from '@/lib/apiClient';
 import { useForm } from '@/hooks/useForm';
 import MITrimmer from '@/components/functions/MITrimmer';
 import { staffValidators } from '@/lib/validator';
+import { useRBAC } from '@/hooks/useRBAC';
 
 // --- Form Configuration Constants ---
 const positionOptions = [
@@ -212,6 +213,7 @@ function StaffModal({ isOpen, onClose, onSuccess, itemToEdit }) {
 
 // 🌟 2. Main Page Component
 export default function StaffDirectoryPage() {
+    const rbac = useRBAC();
     const [branches, setBranches] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -411,7 +413,12 @@ export default function StaffDirectoryPage() {
             sortNameLabel="Staff Name"
             sortDateLabel="Date Joined"
             pageSize={5}
-            rbac={{ canCreate: false }}
+            rbac={{
+                ...rbac,
+                canCreate: false,
+                canEdit: rbac.isAdmin,
+                canDelete: rbac.isAdmin
+            }}
             renderHeaderMiddle={() => (
                 <SearchBar
                     value={searchQuery}

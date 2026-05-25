@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import CrudPageLayout from '@/components/layout/CrudPageLayout';
 import CrudFormModal from '@/components/layout/CrudFormModal';
 import ExportPDF from '@/components/ui/ExportPDF';
@@ -10,6 +10,7 @@ import apiClient from '@/lib/apiClient';
 import { useForm } from '@/hooks/useForm';
 import { paymentValidators } from '@/lib/validator';
 import { useRBAC } from '@/hooks/useRBAC';
+import { useAuth } from '@/hooks/useAuth';
 
 // --- Helper Functions ---
 const normalizeList = (data) => data?.results || data?.items || data || [];
@@ -108,6 +109,21 @@ export default function PaymentsBalancesPage() {
     const [allPayments, setAllPayments] = useState([]);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const rbac = useRBAC();
+    const { role } = useAuth();
+
+    // ── Payment-specific RBAC overrides ──────────────────────────────
+    // Manager + Supervisor: Full operational access (log payments)
+    // Staff + Secretary: Strictly view-only
+    const isAdmin = role === 'ADMIN';
+    const isManager = role === 'Manager';
+    const isSupervisor = role === 'Supervisor';
+
+    const paymentRbac = useMemo(() => ({
+        ...rbac,
+        canCreate: isAdmin || isManager || isSupervisor,
+        canEdit: isAdmin || isManager || isSupervisor,
+        canDelete: isAdmin,
+    }), [rbac, isAdmin, isManager, isSupervisor]);
 
     const triggerRefresh = () => {
         setRefreshTrigger(prev => prev + 1);
@@ -226,7 +242,7 @@ export default function PaymentsBalancesPage() {
             onRowClick={setSelectedLease} // 👈 Tracks row selection for the banner
             searchQuery={searchQuery}
             searchKeys={['lease_no', 'renter_no', 'property_no']}
-            rbac={rbac}
+            rbac={paymentRbac}
             nameKey="lease_no"
             dateKey="last_payment_date"
             sortNameLabel="Lease No"
@@ -258,16 +274,18 @@ export default function PaymentsBalancesPage() {
 
             // 🌟 Override standard Edit/Delete with custom "Log Payment" button
             customActions={(row, handleEditClick) => (
-                <button 
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedLease(row); // Update our banner state
-                        handleEditClick(row);  // Triggers the layout's modal state
-                    }}
-                >
-                    Log Payment
-                </button>
+                paymentRbac.canCreate ? (
+                    <button 
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLease(row); // Update our banner state
+                            handleEditClick(row);  // Triggers the layout's modal state
+                        }}
+                    >
+                        Log Payment
+                    </button>
+                ) : null
             )}
 
             // 🌟 Custom Top UI Grid & Selection Banner

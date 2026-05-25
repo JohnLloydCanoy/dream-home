@@ -11,6 +11,7 @@ import apiClient from '@/lib/apiClient';
 import { useForm } from '@/hooks/useForm';
 import { applySort, createSortHandler } from '@/components/functions/SortingFunc';
 import { paginateData, getPageCount } from '@/components/functions/paginationfunc';
+import { useAuth } from '@/hooks/useAuth';
 
 const normalizeList = (data) => data?.results || data?.items || data || [];
 
@@ -70,6 +71,8 @@ export default function RentalStatusPage() {
 	const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
 	const { formData, handleChange, reset } = useForm({ status_filter: 'all' }, {});
+	const { role } = useAuth();
+	const canUpdateStatus = ['ADMIN', 'Manager', 'Supervisor'].includes(role);
 
 	// ── Sorting ───────────────────────────────────────────────────────────────
 	const [sortConfig, setSortConfig] = useState({ field: null, direction: 'asc' });
@@ -208,9 +211,11 @@ export default function RentalStatusPage() {
 					<Button variant="secondary" onClick={loadProperties}>
 						Refresh
 					</Button>
-					<Button variant="primary" onClick={() => openStatusModal()} disabled={!selectedProperty}>
-						Update Status
-					</Button>
+					{canUpdateStatus && (
+						<Button variant="primary" onClick={() => openStatusModal()} disabled={!selectedProperty}>
+							Update Status
+						</Button>
+					)}
 				</div>
 			</div>
 
@@ -281,7 +286,7 @@ export default function RentalStatusPage() {
 				isLoading={isLoading}
 				emptyMessage="No properties found for the selected status filter."
 				onRowClick={setSelectedProperty}
-				actions={renderActions}
+				actions={canUpdateStatus ? renderActions : undefined}
 			/>
 
 			{/* ── Sort + Pagination (side by side) ── */}

@@ -6,6 +6,7 @@ import DataTable from '@/components/ui/DataTable';
 import FormField from '@/components/ui/FormField';
 import Button from '@/components/ui/Button';
 import Dialog from '@/components/ui/Dialog';
+import { useAuth } from '@/hooks/useAuth';
 
 const formatCurrency = (value) => {
     if (value === null || value === undefined || value === '') return '-';
@@ -27,6 +28,8 @@ export default function ClientAssignmentPage() {
     const [comments, setComments] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [actionMessage, setActionMessage] = useState(null);
+    const { role } = useAuth();
+    const isReadOnly = role === 'Staff';
 
     useEffect(() => {
         setIsLoading(true);
@@ -150,7 +153,7 @@ export default function ClientAssignmentPage() {
             label: 'Monthly Rent',
             render: (val) => <span className="font-medium text-gray-900">₱{formatCurrency(val)}</span>
         },
-        { 
+        ...(!isReadOnly ? [{
             key: 'actions', 
             label: 'Actions',
             render: (val, row) => (
@@ -162,7 +165,7 @@ export default function ClientAssignmentPage() {
                     Schedule Viewing
                 </Button>
             )
-        }
+        }] : [])
     ];
 
     return (

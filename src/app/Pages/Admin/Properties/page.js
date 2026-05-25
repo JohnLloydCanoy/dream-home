@@ -10,6 +10,7 @@ import apiClient from '@/lib/apiClient';
 import { useForm } from '@/hooks/useForm';
 import { propertyValidators } from '@/lib/validator';
 import { useRBAC } from '@/hooks/useRBAC';
+import { useAuth } from '@/hooks/useAuth';
 
 const normalizeList = (data) => data?.results || data?.items || data || [];
 
@@ -272,10 +273,30 @@ function PropertyModal({ isOpen, onClose, onSuccess, itemToEdit }) {
 
 export default function PropertiesPage() {
     const [searchQuery, setSearchQuery] = useState('');
-    const rbac = useRBAC();
+    const baseRbac = useRBAC();
+    const { role } = useAuth();
     const [owners, setOwners] = useState([]);
     const [branches, setBranches] = useState([]);
     const [staffList, setStaffList] = useState([]);
+
+    // ── Property-specific RBAC overrides ──────────────────────────────
+    // Staff: Create + Update only (no delete, no approve)
+    // Supervisor: Full CRUD + Approve/Reject
+    // Manager: Edit (for approvals) only — no create, no delete
+    // Secretary: Read-only
+    const isAdmin = role === 'ADMIN';
+    const isManager = role === 'Manager';
+    const isSupervisor = role === 'Supervisor';
+    const isStaff = role === 'Staff';
+    const isSecretary = role === 'Secretary';
+
+    const propertyRbac = useMemo(() => ({
+        ...baseRbac,
+        canCreate: isAdmin || isSupervisor || isStaff,
+        canEdit: isAdmin || isManager || isSupervisor || isStaff,
+        canDelete: isAdmin || isSupervisor,
+        canApprove: isAdmin || isManager || isSupervisor,
+    }), [baseRbac, isAdmin, isManager, isSupervisor, isStaff]);
 
     useEffect(() => {
         let isActive = true;
@@ -439,7 +460,7 @@ export default function PropertiesPage() {
             searchQuery={searchQuery}
             searchKeys={['property_no', 'title', 'address', 'property_type', 'no_of_rooms', 'monthly_rent', 'status', 'owner_no', 'staff_no', 'branch_no', 'date_withdrawn']}
             getDeleteModalItemName={(property) => `Property ${property.property_no} - ${property.area || ''}`.trim()}
-            rbac={rbac}
+            rbac={propertyRbac}
             nameKey="title"
             dateKey="date_withdrawn"
             sortNameLabel="Title"
@@ -467,9 +488,7 @@ export default function PropertiesPage() {
                 />
             )}
             customActions={(row, handleEditClick, handleDeleteClick) => {
-                const canEdit = rbac?.canEdit ?? true;
-                const canDelete = rbac?.canDelete ?? true;
-                const rowInBranch = rbac?.isOwnBranch ? rbac.isOwnBranch(row) : true;
+                const rowInBranch = propertyRbac?.isOwnBranch ? propertyRbac.isOwnBranch(row) : true;
                 const isPending = row.status === 'Pending Approval';
 
                 const handleApprove = async (e) => {
@@ -506,7 +525,7 @@ export default function PropertiesPage() {
 
                 return (
                     <div className="flex justify-end gap-3">
-                        {isPending && canEdit && rowInBranch && (
+                        {isPending && propertyRbac.canApprove && rowInBranch && (
                             <>
                                 <button
                                     onClick={handleApprove}
@@ -522,12 +541,12 @@ export default function PropertiesPage() {
                                 </button>
                             </>
                         )}
-                        {canEdit && rowInBranch && (
+                        {propertyRbac.canEdit && rowInBranch && (
                             <button onClick={(e) => { e.stopPropagation(); handleEditClick(row); }} className="text-blue-600 hover:text-blue-900 text-sm font-semibold">
                                 Edit
                             </button>
                         )}
-                        {canDelete && (
+                        {propertyRbac.canDelete && (
                             <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(row); }} className="text-red-600 hover:text-red-900 text-sm font-semibold">
                                 Delete
                             </button>

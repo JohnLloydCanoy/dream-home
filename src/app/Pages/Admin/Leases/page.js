@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import CrudPageLayout from '@/components/layout/CrudPageLayout';
 import CrudFormModal from '@/components/layout/CrudFormModal';
 import ExportPDF from '@/components/ui/ExportPDF';
@@ -245,10 +245,25 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
 // --- Main Page Component ---
 export default function LeaseAgreementsPage() {
     const [searchQuery, setSearchQuery] = useState('');
-    const rbac = useRBAC();
+    const baseRbac = useRBAC();
+    const { role } = useAuth();
     // ✅ FIX 2: Get the logged-in staff's ID from the auth context so we can
     // pass it down to the modal and auto-populate the staff_no in payloads.
     const { staffNo } = useAuth();
+
+    // ── Lease-specific RBAC overrides ────────────────────────────────
+    // Manager + Supervisor: Create, Edit, Delete
+    // Staff + Secretary: View only
+    const isAdmin = role === 'ADMIN';
+    const isManager = role === 'Manager';
+    const isSupervisor = role === 'Supervisor';
+
+    const leaseRbac = useMemo(() => ({
+        ...baseRbac,
+        canCreate: isAdmin || isManager || isSupervisor,
+        canEdit: isAdmin || isManager || isSupervisor,
+        canDelete: isAdmin || isManager || isSupervisor,
+    }), [baseRbac, isAdmin, isManager, isSupervisor]);
 
     const tableColumns = [
         {
@@ -347,7 +362,7 @@ export default function LeaseAgreementsPage() {
             searchQuery={searchQuery}
             searchKeys={['lease_no', 'property_no', 'renter_no', 'payment_method']}
             getDeleteModalItemName={(lease) => `Lease ${lease.lease_no || ''}`.trim()}
-            rbac={rbac}
+            rbac={leaseRbac}
             nameKey="lease_no"
             dateKey="rent_start"
             sortNameLabel="Lease No"

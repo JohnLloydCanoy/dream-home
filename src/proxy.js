@@ -12,10 +12,10 @@ const ADMIN_ONLY = ['ADMIN'];
 // Order matters — more specific routes must come first.
 const ROUTE_ROLES = [
     // ADMIN-only routes
-    { path: '/Pages/Admin/Staff',                 roles: ADMIN_ONLY },
     { path: '/Pages/Admin/Audits',                roles: ADMIN_ONLY },
 
     // Manager+ routes
+    { path: '/Pages/Admin/Staff/Hiring',          roles: ['ADMIN', 'Manager'] },
     { path: '/Pages/Admin/Branches',              roles: MANAGER_UP },
     { path: '/Pages/Admin/Reports',               roles: MANAGER_UP },
     { path: '/Pages/Admin/Leases',                roles: MANAGER_UP },

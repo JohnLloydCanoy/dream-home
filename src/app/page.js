@@ -118,7 +118,7 @@ export default function Home() {
                   type="button"
                   className="bg-[#E11553] hover:bg-[#C11246] text-white font-bold text-[17px] py-3 px-6 rounded-md transition-colors"
                 >
-                  Request Staff Access
+                  Apply Here
                 </button>
               </div>
             </form>

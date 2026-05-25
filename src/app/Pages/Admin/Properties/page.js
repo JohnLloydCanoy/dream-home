@@ -144,7 +144,7 @@ function PropertyModal({ isOpen, onClose, onSuccess, itemToEdit }) {
 
     useEffect(() => {
         if (isOpen) reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [itemToEdit?.property_no, isOpen]);
 
     const formatPayload = (data) => {
@@ -215,8 +215,8 @@ function PropertyModal({ isOpen, onClose, onSuccess, itemToEdit }) {
                             const isRentedOption = option.value === 'Rented';
                             const isCurrentlyRented = itemToEdit?.status === 'Rented';
                             return (
-                                <option 
-                                    key={option.value} 
+                                <option
+                                    key={option.value}
                                     value={option.value}
                                     disabled={isRentedOption && !isCurrentlyRented}
                                 >
@@ -327,7 +327,7 @@ export default function PropertiesPage() {
             exportValue: (row) => [row.title || 'Untitled Property', row.description || 'No description'].join('\n'),
             searchValue: (row) => `${row.title || ''} ${row.description || ''}`.trim()
         },
-        { 
+        {
             key: 'address', label: 'Address',
             render: (_, row) => (
                 <div className="text-xs text-gray-500">
@@ -353,8 +353,8 @@ export default function PropertiesPage() {
             },
             exportValue: (row) => formatCurrency(row.monthly_rent)
         },
-        { 
-            key: 'status', 
+        {
+            key: 'status',
             label: 'Status',
             render: (value) => {
                 const colors = {

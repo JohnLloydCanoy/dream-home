@@ -71,7 +71,7 @@ function AdvertisementModal({ isOpen, onClose, onSuccess, itemToEdit }) {
 
     useEffect(() => {
         if (isOpen) reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [itemToEdit?.id, isOpen]);
 
     const formatPayload = (data) => {
@@ -104,7 +104,7 @@ function AdvertisementModal({ isOpen, onClose, onSuccess, itemToEdit }) {
                 <div className="space-y-4">
                     <FormField label="Title" field="title" value={formData.title} onChange={handleChange} error={errors.title} placeholder="Advertisement Title" />
                     <FormField label="Message" field="message" type="textarea" value={formData.message} onChange={handleChange} error={errors.message} placeholder="Ad content..." />
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                         <FormField label="Status" field="status" type="select" value={formData.status} onChange={handleChange} error={errors.status}>
                             <option value="Draft">Draft</option>
@@ -159,14 +159,14 @@ export default function AdvertisementPage() {
     const rbac = useRBAC();
 
     const tableColumns = [
-        { 
-            key: 'id', 
-            label: 'ID', 
-            render: (val) => <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-xs">{val}</span> 
+        {
+            key: 'id',
+            label: 'ID',
+            render: (val) => <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-xs">{val}</span>
         },
-        { 
-            key: 'title', 
-            label: 'Advertisement', 
+        {
+            key: 'title',
+            label: 'Advertisement',
             render: (val, row) => (
                 <div className="text-xs text-gray-500">
                     <p className="text-gray-900 font-medium">{val}</p>
@@ -176,16 +176,16 @@ export default function AdvertisementPage() {
             exportValue: (row) => `${row.title}\n${row.message}`,
             searchValue: (row) => `${row.title} ${row.message}`
         },
-        { 
-            key: 'property_no', 
-            label: 'Property', 
+        {
+            key: 'property_no',
+            label: 'Property',
             render: (val) => getPropertyLabel(val),
             exportValue: (row) => getPropertyLabel(row.property_no),
             searchValue: (row) => getPropertyLabel(row.property_no)
         },
-        { 
-            key: 'status', 
-            label: 'Status', 
+        {
+            key: 'status',
+            label: 'Status',
             render: (val) => {
                 const colors = {
                     'Active': 'bg-green-100 text-green-800',
@@ -197,16 +197,16 @@ export default function AdvertisementPage() {
                         {val}
                     </span>
                 );
-            } 
+            }
         },
-        { 
-            key: 'placement', 
-            label: 'Placement', 
-            render: (val) => <span className="text-sm font-medium">{val}</span> 
+        {
+            key: 'placement',
+            label: 'Placement',
+            render: (val) => <span className="text-sm font-medium">{val}</span>
         },
-        { 
-            key: 'duration', 
-            label: 'Duration', 
+        {
+            key: 'duration',
+            label: 'Duration',
             render: (_, row) => (
                 <div className="text-xs text-gray-500">
                     {formatDate(row.start_date)} to {formatDate(row.end_date)}
@@ -214,9 +214,9 @@ export default function AdvertisementPage() {
             ),
             exportValue: (row) => `${formatDate(row.start_date)} to ${formatDate(row.end_date)}`
         },
-        { 
-            key: 'assigned_by', 
-            label: 'Assigned By', 
+        {
+            key: 'assigned_by',
+            label: 'Assigned By',
             render: (val) => getStaffLabel(val),
             exportValue: (row) => getStaffLabel(row.assigned_by),
             searchValue: (row) => getStaffLabel(row.assigned_by)
@@ -240,7 +240,7 @@ export default function AdvertisementPage() {
             sortNameLabel="Title"
             sortDateLabel="Start Date"
             pageSize={5}
-            
+
             renderHeaderMiddle={() => (
                 <SearchBar
                     value={searchQuery}
@@ -250,7 +250,7 @@ export default function AdvertisementPage() {
                     size="md"
                 />
             )}
-            
+
             renderHeaderActions={(dataList) => (
                 <ExportPDF
                     title="Advertisements Report"

@@ -107,6 +107,23 @@ const getStaffDisplay = (value, lookupMap) => {
 };
 
 function ViewingModal({ isOpen, onClose, onSuccess, itemToEdit, properties, renters, staffById }) {
+    const propertyOptions = React.useMemo(() => {
+        const list = [...properties];
+        const editProp = itemToEdit?.property_no || itemToEdit?.property;
+        if (editProp) {
+            const propId = typeof editProp === 'object' ? editProp.property_no : editProp;
+            const exists = list.some(p => p.property_no === propId);
+            if (!exists) {
+                if (typeof editProp === 'object') {
+                    list.push(editProp);
+                } else {
+                    list.push({ property_no: editProp, street: 'Property', city: editProp });
+                }
+            }
+        }
+        return list;
+    }, [properties, itemToEdit]);
+
     const { formData, errors, handleChange, validate, reset } = useForm({
         property_no: toId(itemToEdit?.property_no || itemToEdit?.property, 'property_no'),
         renter_no: toId(itemToEdit?.renter_no || itemToEdit?.renter || itemToEdit?.client, 'client_no'),
@@ -153,7 +170,7 @@ function ViewingModal({ isOpen, onClose, onSuccess, itemToEdit, properties, rent
                 <div className="grid grid-cols-2 gap-4">
                     <FormField label="Property" field="property_no" type="select" value={formData.property_no} onChange={handleChange} error={errors.property_no}>
                         <option value="">— Select Property —</option>
-                        {properties.map((property) => (
+                        {propertyOptions.map((property) => (
                             <option key={property.property_no} value={property.property_no}>
                                 {property.property_no} - {property.street}, {property.city}
                             </option>
@@ -208,7 +225,7 @@ export default function PropertyViewingsPage() {
         let isActive = true;
 
         Promise.all([
-            apiClient('/properties/').catch(err => {
+            apiClient('/properties/?status=Available').catch(err => {
                 console.error('Failed to load properties:', err);
                 return [];
             }),

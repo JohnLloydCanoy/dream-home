@@ -86,7 +86,7 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
             .then(([propData, renterData, viewingsData]) => {
                 setProperties(normalizeList(propData));
                 setRenters(normalizeList(renterData));
-                
+
                 // Keep only approved viewings for smart filtering
                 const approvedViewings = normalizeList(viewingsData).filter(v => v.status === 'Approved');
                 setViewings(approvedViewings);
@@ -108,28 +108,28 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
 
     useEffect(() => {
         if (isOpen) reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [itemToEdit?.lease_no, isOpen]);
 
     // ✅ Smart Feature 1: Filter available properties and renters based on viewings
     const availableProperties = formData.renter
-        ? properties.filter(p => viewings.some(v => 
-            toId(v.renter_no, 'client_no') === formData.renter && 
+        ? properties.filter(p => viewings.some(v =>
+            toId(v.renter_no, 'client_no') === formData.renter &&
             toId(v.property_no, 'property_no') === p.property_no
-          ))
+        ))
         : properties;
 
     const availableRenters = formData.property
-        ? renters.filter(r => viewings.some(v => 
-            toId(v.property_no, 'property_no') === formData.property && 
+        ? renters.filter(r => viewings.some(v =>
+            toId(v.property_no, 'property_no') === formData.property &&
             toId(v.renter_no, 'client_no') === r.client_no
-          ))
+        ))
         : renters;
 
     // ✅ Smart Feature 2: Auto-fill rent when property changes
     const handlePropertyChange = (field, value) => {
         handleChange(field, value); // Standard handling
-        
+
         if (field === 'property' && value) {
             const selectedProp = properties.find(p => p.property_no === value);
             if (selectedProp && selectedProp.monthly_rent) {
@@ -225,11 +225,10 @@ function LeaseModal({ isOpen, onClose, onSuccess, itemToEdit, staffNo }) {
                     <div className="flex flex-col gap-1">
                         <span className="text-xs text-gray-500 uppercase tracking-wider font-bold">Deposit Status</span>
                         <div className="flex items-center gap-2 mt-1">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                                formData.deposit_paid 
-                                    ? 'bg-green-100 text-green-700 border-green-200' 
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${formData.deposit_paid
+                                    ? 'bg-green-100 text-green-700 border-green-200'
                                     : 'bg-amber-100 text-amber-700 border-amber-200'
-                            }`}>
+                                }`}>
                                 {formData.deposit_paid ? 'Paid' : 'Pending'}
                             </span>
                             <span className="text-xs text-gray-500">
@@ -257,29 +256,29 @@ export default function LeaseAgreementsPage() {
             label: 'Lease No',
             render: (value) => <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-xs">{value}</span>
         },
-        { 
-            key: 'property_no', 
-            label: 'Property', 
+        {
+            key: 'property_no',
+            label: 'Property',
             render: (value) => getPropertyLabel(value),
             exportValue: (row) => getPropertyLabel(row.property_no),
             searchValue: (row) => getPropertyLabel(row.property_no)
         },
-        { 
-            key: 'renter_no', 
-            label: 'Renter', 
+        {
+            key: 'renter_no',
+            label: 'Renter',
             render: (value) => getRenterLabel(value),
             exportValue: (row) => getRenterLabel(row.renter_no),
             searchValue: (row) => getRenterLabel(row.renter_no)
         },
-        { 
-            key: 'monthly_rent', 
-            label: 'Monthly Rent', 
+        {
+            key: 'monthly_rent',
+            label: 'Monthly Rent',
             render: (value) => formatCurrency(value),
             exportValue: (row) => formatCurrency(row.monthly_rent)
         },
-        { 
-            key: 'deposit', 
-            label: 'Deposit', 
+        {
+            key: 'deposit',
+            label: 'Deposit',
             render: (value) => formatCurrency(value),
             exportValue: (row) => formatCurrency(row.deposit)
         },
@@ -299,19 +298,19 @@ export default function LeaseAgreementsPage() {
             },
             exportValue: (row) => (row.deposit_paid ? 'Paid' : 'Pending')
         },
-        { 
-            key: 'payment_method', 
-            label: 'Payment Method', 
-            render: (value) => value || 'N/A' 
+        {
+            key: 'payment_method',
+            label: 'Payment Method',
+            render: (value) => value || 'N/A'
         },
-        { 
-            key: 'duration', 
-            label: 'Duration', 
-            render: (value) => `${value || 'N/A'} month(s)` 
+        {
+            key: 'duration',
+            label: 'Duration',
+            render: (value) => `${value || 'N/A'} month(s)`
         },
-        { 
-            key: 'term', 
-            label: 'Term', 
+        {
+            key: 'term',
+            label: 'Term',
             render: (_, row) => `${getStartDate(row)} to ${getEndDate(row)}`,
             exportValue: (row) => `${getStartDate(row)} to ${getEndDate(row)}`
         }
@@ -334,7 +333,7 @@ export default function LeaseAgreementsPage() {
             sortNameLabel="Lease No"
             sortDateLabel="Start Date"
             pageSize={5}
-            
+
             renderHeaderMiddle={() => (
                 <SearchBar
                     value={searchQuery}
@@ -344,7 +343,7 @@ export default function LeaseAgreementsPage() {
                     size="md"
                 />
             )}
-            
+
             renderHeaderActions={(dataList) => (
                 <ExportPDF
                     title="Lease Agreements"

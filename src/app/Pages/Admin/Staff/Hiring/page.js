@@ -50,6 +50,17 @@ const roleBadgeStyles = {
     Secretary: 'bg-amber-50 text-amber-700'
 };
 
+const genderOptions = [
+    { value: 'M', label: 'Male' },
+    { value: 'F', label: 'Female' },
+    { value: 'P', label: 'Prefer not to say' }
+];
+
+const cleanValue = (value) => {
+    const trimmed = String(value || '').trim();
+    return trimmed.length ? trimmed : null;
+};
+
 const applicationValidators = {
     first_name: {
         required: true,
@@ -65,6 +76,16 @@ const applicationValidators = {
         pattern: REGEX.NAME,
         patternMessage: 'Only letters, spaces, hyphens, and apostrophes allowed'
     },
+    middle_name: {
+        maxLength: 100,
+        label: 'Middle Name',
+        pattern: REGEX.NAME,
+        patternMessage: 'Only letters, spaces, hyphens, and apostrophes allowed'
+    },
+    suffixes: {
+        maxLength: 10,
+        label: 'Suffix'
+    },
     email: {
         required: true,
         maxLength: 255,
@@ -78,6 +99,31 @@ const applicationValidators = {
         label: 'Telephone Number',
         pattern: REGEX.PH_PHONE_FAX,
         patternMessage: 'Enter a valid phone number'
+    },
+    address: {
+        required: true,
+        maxLength: 255,
+        label: 'Address',
+        pattern: REGEX.ADDRESS,
+        patternMessage: 'Invalid characters in address'
+    },
+    sex: {
+        required: true,
+        maxLength: 10,
+        label: 'Gender'
+    },
+    dob: {
+        required: true,
+        label: 'Date of Birth',
+        pattern: REGEX.DATE_YYYY_MM_DD,
+        patternMessage: 'Date must be in YYYY-MM-DD format'
+    },
+    nin: {
+        required: true,
+        maxLength: 50,
+        label: 'National Insurance Number',
+        pattern: REGEX.ID_NUMBER,
+        patternMessage: 'Only letters, numbers, and hyphens allowed'
     },
     branch: {
         required: true,
@@ -96,6 +142,48 @@ const applicationValidators = {
         label: 'Preferred Start Date',
         pattern: REGEX.DATE_YYYY_MM_DD,
         patternMessage: 'Date must be in YYYY-MM-DD format'
+    },
+    typing_speed: {
+        label: 'Typing Speed',
+        pattern: REGEX.WHOLE_NUMBER,
+        patternMessage: 'Typing speed must be a whole number'
+    },
+    nok_first_name: {
+        maxLength: 100,
+        label: 'Next of Kin First Name',
+        pattern: REGEX.NAME,
+        patternMessage: 'Only letters, spaces, hyphens, and apostrophes allowed'
+    },
+    nok_last_name: {
+        maxLength: 100,
+        label: 'Next of Kin Last Name',
+        pattern: REGEX.NAME,
+        patternMessage: 'Only letters, spaces, hyphens, and apostrophes allowed'
+    },
+    nok_middle_name: {
+        maxLength: 100,
+        label: 'Next of Kin Middle Name',
+        pattern: REGEX.NAME,
+        patternMessage: 'Only letters, spaces, hyphens, and apostrophes allowed'
+    },
+    nok_suffixes: { maxLength: 10, label: 'Next of Kin Suffix' },
+    nok_relationship: {
+        maxLength: 100,
+        label: 'Relationship',
+        pattern: REGEX.ALPHA_ONLY,
+        patternMessage: 'Relationship can only contain letters'
+    },
+    nok_address: {
+        maxLength: 255,
+        label: 'Next of Kin Address',
+        pattern: REGEX.ADDRESS,
+        patternMessage: 'Invalid characters in address'
+    },
+    nok_telephone_no: {
+        maxLength: 50,
+        label: 'Next of Kin Telephone',
+        pattern: REGEX.PH_PHONE_FAX,
+        patternMessage: 'Enter a valid phone number'
     }
 };
 
@@ -165,41 +253,75 @@ function HiringApplicationModal({
 }) {
     const isEditMode = Boolean(itemToEdit?.id);
     const resolvedBranch = itemToEdit?.branch || branchCode || '';
+    const [conditionalErrors, setConditionalErrors] = useState({});
 
     const { formData, errors, handleChange, validate, reset, setFormData } = useForm({
         first_name: itemToEdit?.first_name || '',
         last_name: itemToEdit?.last_name || '',
+        middle_name: itemToEdit?.middle_name || '',
+        suffixes: itemToEdit?.suffixes || '',
         email: itemToEdit?.email || '',
         telephone_no: itemToEdit?.telephone_no || '',
+        address: itemToEdit?.address || '',
+        sex: itemToEdit?.sex || '',
+        dob: itemToEdit?.dob || '',
+        nin: itemToEdit?.nin || '',
         branch: resolvedBranch,
         position: itemToEdit?.position || (roleOptions[0]?.value || ''),
         salary: itemToEdit?.salary || '',
         stage: itemToEdit?.stage || 'Applied',
         assigned_manager: itemToEdit?.assigned_manager || currentManager?.staffNo || '',
         notes: itemToEdit?.notes || '',
-        preferred_start_date: itemToEdit?.preferred_start_date || ''
+        preferred_start_date: itemToEdit?.preferred_start_date || '',
+        typing_speed: itemToEdit?.typing_speed || '',
+        nok_first_name: itemToEdit?.nok_first_name || '',
+        nok_last_name: itemToEdit?.nok_last_name || '',
+        nok_middle_name: itemToEdit?.nok_middle_name || '',
+        nok_suffixes: itemToEdit?.nok_suffixes || '',
+        nok_relationship: itemToEdit?.nok_relationship || '',
+        nok_address: itemToEdit?.nok_address || '',
+        nok_telephone_no: itemToEdit?.nok_telephone_no || ''
     }, applicationValidators);
 
     useEffect(() => {
         if (!isOpen) return;
+        setConditionalErrors({});
         reset({
             first_name: itemToEdit?.first_name || '',
             last_name: itemToEdit?.last_name || '',
+            middle_name: itemToEdit?.middle_name || '',
+            suffixes: itemToEdit?.suffixes || '',
             email: itemToEdit?.email || '',
             telephone_no: itemToEdit?.telephone_no || '',
+            address: itemToEdit?.address || '',
+            sex: itemToEdit?.sex || '',
+            dob: itemToEdit?.dob || '',
+            nin: itemToEdit?.nin || '',
             branch: itemToEdit?.branch || branchCode || '',
             position: itemToEdit?.position || (roleOptions[0]?.value || ''),
             salary: itemToEdit?.salary || '',
             stage: itemToEdit?.stage || 'Applied',
             assigned_manager: itemToEdit?.assigned_manager || currentManager?.staffNo || '',
             notes: itemToEdit?.notes || '',
-            preferred_start_date: itemToEdit?.preferred_start_date || ''
+            preferred_start_date: itemToEdit?.preferred_start_date || '',
+            typing_speed: itemToEdit?.typing_speed || '',
+            nok_first_name: itemToEdit?.nok_first_name || '',
+            nok_last_name: itemToEdit?.nok_last_name || '',
+            nok_middle_name: itemToEdit?.nok_middle_name || '',
+            nok_suffixes: itemToEdit?.nok_suffixes || '',
+            nok_relationship: itemToEdit?.nok_relationship || '',
+            nok_address: itemToEdit?.nok_address || '',
+            nok_telephone_no: itemToEdit?.nok_telephone_no || ''
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, itemToEdit?.id]);
 
     const handleFieldChange = (field, value) => {
         handleChange(field, value);
+
+        if (conditionalErrors[field]) {
+            setConditionalErrors((prev) => ({ ...prev, [field]: null }));
+        }
 
         if (field === 'branch' && isAdmin) {
             const defaultManager = branchManagerMap[value];
@@ -212,16 +334,47 @@ function HiringApplicationModal({
         }
     };
 
+    const validateConditionals = () => {
+        const nextErrors = {};
+
+        if (formData.position === 'Secretary' && !cleanValue(formData.typing_speed)) {
+            nextErrors.typing_speed = 'Typing speed is required for secretarial applicants.';
+        }
+
+        setConditionalErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
+    };
+
     const handleSubmit = (event) => {
         event.preventDefault();
-        if (!validate()) return;
+        
+        const baseValid = validate();
+        const conditionalValid = validateConditionals();
+        if (!baseValid || !conditionalValid) return;
 
         const branchValue = isAdmin ? formData.branch : (branchCode || formData.branch);
-        onSave({
+        
+        const cleanedPayload = {
             ...formData,
             branch: branchValue,
-            assigned_manager: isManager ? (currentManager?.staffNo || formData.assigned_manager) : formData.assigned_manager
-        }, itemToEdit);
+            assigned_manager: isManager ? (currentManager?.staffNo || formData.assigned_manager) : formData.assigned_manager,
+            middle_name: cleanValue(formData.middle_name),
+            suffixes: cleanValue(formData.suffixes),
+            address: cleanValue(formData.address),
+            sex: cleanValue(formData.sex),
+            dob: cleanValue(formData.dob),
+            nin: cleanValue(formData.nin),
+            typing_speed: formData.position === 'Secretary' ? cleanValue(formData.typing_speed) : null,
+            nok_first_name: cleanValue(formData.nok_first_name),
+            nok_last_name: cleanValue(formData.nok_last_name),
+            nok_middle_name: cleanValue(formData.nok_middle_name),
+            nok_suffixes: cleanValue(formData.nok_suffixes),
+            nok_relationship: cleanValue(formData.nok_relationship),
+            nok_address: cleanValue(formData.nok_address),
+            nok_telephone_no: cleanValue(formData.nok_telephone_no)
+        };
+
+        onSave(cleanedPayload, itemToEdit);
     };
 
     if (!isOpen) return null;
@@ -251,6 +404,23 @@ function HiringApplicationModal({
                             error={errors.last_name}
                         />
                         <FormField
+                            label="Middle Name (Optional)"
+                            field="middle_name"
+                            value={formData.middle_name}
+                            onChange={handleFieldChange}
+                            error={errors.middle_name}
+                            required={false}
+                        />
+                        <FormField
+                            label="Suffix (Optional)"
+                            field="suffixes"
+                            value={formData.suffixes}
+                            onChange={handleFieldChange}
+                            error={errors.suffixes}
+                            required={false}
+                            placeholder="e.g. Jr., III"
+                        />
+                        <FormField
                             label="Email"
                             field="email"
                             type="email"
@@ -264,6 +434,47 @@ function HiringApplicationModal({
                             value={formData.telephone_no}
                             onChange={handleFieldChange}
                             error={errors.telephone_no}
+                        />
+                        <FormField
+                            label="Gender"
+                            field="sex"
+                            type="select"
+                            value={formData.sex}
+                            onChange={handleFieldChange}
+                            error={errors.sex}
+                        >
+                            <option value="">-- Select Gender --</option>
+                            {genderOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </FormField>
+                        <FormField
+                            label="Date of Birth"
+                            field="dob"
+                            type="date"
+                            value={formData.dob}
+                            onChange={handleFieldChange}
+                            error={errors.dob}
+                        />
+                        <FormField
+                            label="National Insurance No."
+                            field="nin"
+                            value={formData.nin}
+                            onChange={handleFieldChange}
+                            error={errors.nin}
+                            placeholder="e.g. AB-123456-C"
+                        />
+                        <FormField
+                            label="Address"
+                            field="address"
+                            type="textarea"
+                            value={formData.address}
+                            onChange={handleFieldChange}
+                            error={errors.address}
+                            className="sm:col-span-2"
+                            placeholder="Full residential address"
                         />
                     </div>
                 </section>
@@ -360,6 +571,31 @@ function HiringApplicationModal({
                             onChange={handleFieldChange}
                             required={true}
                         />
+
+                        {formData.position === 'Secretary' && (
+                            <div className="sm:col-span-2 space-y-2">
+                                <FormField
+                                    label="Typing Speed (WPM)"
+                                    field="typing_speed"
+                                    type="number"
+                                    value={formData.typing_speed}
+                                    onChange={handleFieldChange}
+                                    error={errors.typing_speed || conditionalErrors.typing_speed}
+                                    required={true}
+                                    placeholder="e.g. 60"
+                                />
+                                <div className="text-xs">
+                                    <a
+                                        href="https://monkeytype.com/"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center font-semibold text-blue-700 hover:text-blue-900 hover:underline"
+                                    >
+                                        Test your typing speed on Monkeytype
+                                    </a>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </section>
 
@@ -374,6 +610,69 @@ function HiringApplicationModal({
                         required={false}
                         placeholder="Add interview notes, assessments, or special considerations."
                     />
+                </section>
+
+                <section>
+                    <h3 className="text-sm font-bold text-[#002147] border-b pb-2 mb-4">Next of Kin (Optional)</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                            label="Next of Kin First Name"
+                            field="nok_first_name"
+                            value={formData.nok_first_name}
+                            onChange={handleFieldChange}
+                            error={errors.nok_first_name}
+                            required={false}
+                        />
+                        <FormField
+                            label="Next of Kin Last Name"
+                            field="nok_last_name"
+                            value={formData.nok_last_name}
+                            onChange={handleFieldChange}
+                            error={errors.nok_last_name}
+                            required={false}
+                        />
+                        <FormField
+                            label="Next of Kin Middle Name"
+                            field="nok_middle_name"
+                            value={formData.nok_middle_name}
+                            onChange={handleFieldChange}
+                            error={errors.nok_middle_name}
+                            required={false}
+                        />
+                        <FormField
+                            label="Next of Kin Suffix"
+                            field="nok_suffixes"
+                            value={formData.nok_suffixes}
+                            onChange={handleFieldChange}
+                            error={errors.nok_suffixes}
+                            required={false}
+                            placeholder="e.g. Jr., III"
+                        />
+                        <FormField
+                            label="Relationship"
+                            field="nok_relationship"
+                            value={formData.nok_relationship}
+                            onChange={handleFieldChange}
+                            error={errors.nok_relationship}
+                            required={false}
+                        />
+                        <FormField
+                            label="Next of Kin Address"
+                            field="nok_address"
+                            value={formData.nok_address}
+                            onChange={handleFieldChange}
+                            error={errors.nok_address}
+                            required={false}
+                        />
+                        <FormField
+                            label="Next of Kin Telephone No."
+                            field="nok_telephone_no"
+                            value={formData.nok_telephone_no}
+                            onChange={handleFieldChange}
+                            error={errors.nok_telephone_no}
+                            required={false}
+                        />
+                    </div>
                 </section>
 
                 <div className="flex justify-end gap-3 pt-2">

@@ -89,12 +89,6 @@ const applicationValidators = {
 		patternMessage: 'Only letters, numbers, and hyphens allowed'
 	},
 	position: { required: true, maxLength: 50, label: 'Position' },
-	salary: {
-		required: true,
-		label: 'Expected Salary',
-		pattern: REGEX.MONEY,
-		patternMessage: 'Salary must be a valid amount'
-	},
 	date_joined: {
 		required: true,
 		label: 'Preferred Start Date',
@@ -102,26 +96,10 @@ const applicationValidators = {
 		patternMessage: 'Date must be in YYYY-MM-DD format'
 	},
 	branch: { required: true, label: 'Preferred Branch' },
-	supervisor: { maxLength: 50, label: 'Supervisor' },
 	typing_speed: {
 		label: 'Typing Speed',
 		pattern: REGEX.WHOLE_NUMBER,
 		patternMessage: 'Typing speed must be a whole number'
-	},
-	manager_start_date: {
-		label: 'Manager Start Date',
-		pattern: REGEX.DATE_YYYY_MM_DD,
-		patternMessage: 'Date must be in YYYY-MM-DD format'
-	},
-	bonus_payment: {
-		label: 'Bonus Payment',
-		pattern: REGEX.MONEY,
-		patternMessage: 'Bonus payment must be a valid amount'
-	},
-	car_allowance: {
-		label: 'Car Allowance',
-		pattern: REGEX.MONEY,
-		patternMessage: 'Car allowance must be a valid amount'
 	},
 	nok_first_name: {
 		maxLength: 100,
@@ -174,14 +152,9 @@ const initialState = {
 	dob: '',
 	nin: '',
 	position: 'Staff',
-	salary: '',
 	date_joined: '',
 	branch: '',
-	supervisor: '',
 	typing_speed: '',
-	manager_start_date: '',
-	bonus_payment: '',
-	car_allowance: '',
 	notes: '',
 	nok_first_name: '',
 	nok_last_name: '',
@@ -280,10 +253,6 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 			nextErrors.typing_speed = 'Typing speed is required for secretarial applicants.';
 		}
 
-		if (formData.position === 'Manager' && !cleanValue(formData.manager_start_date)) {
-			nextErrors.manager_start_date = 'Manager start date is required.';
-		}
-
 		setConditionalErrors(nextErrors);
 		return Object.keys(nextErrors).length === 0;
 	};
@@ -316,15 +285,10 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 				dob: cleanValue(formData.dob),
 				nin: cleanValue(formData.nin),
 				position: cleanValue(formData.position),
-				salary: cleanValue(formData.salary),
 				date_joined: cleanValue(formData.date_joined),
 				preferred_start: cleanValue(formData.date_joined),
 				branch: cleanValue(formData.branch),
-				supervisor: cleanValue(formData.supervisor),
 				typing_speed: formData.position === 'Secretary' ? cleanValue(formData.typing_speed) : null,
-				manager_start_date: formData.position === 'Manager' ? cleanValue(formData.manager_start_date) : null,
-				bonus_payment: formData.position === 'Manager' ? cleanValue(formData.bonus_payment) : null,
-				car_allowance: ['Manager', 'Supervisor'].includes(formData.position) ? cleanValue(formData.car_allowance) : null,
 				notes: cleanValue(formData.notes),
 				next_of_kin: nextOfKin,
 				stage: 'Applied',
@@ -371,9 +335,7 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 	const employmentFields = [
 		{ label: 'Position Applied', field: 'position', type: 'select', options: positionOptions },
 		{ label: 'Preferred Branch', field: 'branch', type: 'select', options: branchOptions },
-		{ label: 'Preferred Start Date', field: 'date_joined', type: 'date' },
-		{ label: 'Expected Salary', field: 'salary', type: 'number', placeholder: 'e.g., 25000' },
-		{ label: 'Supervisor (Optional)', field: 'supervisor', required: false, placeholder: 'If known, enter staff ID' }
+		{ label: 'Preferred Start Date', field: 'date_joined', type: 'date' }
 	];
 
 	const nextOfKinFields = [
@@ -442,7 +404,7 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 					</div>
 
 					{formData.position === 'Secretary' && (
-						<div className="mt-4">
+						<div className="mt-4 space-y-2">
 							{renderField({
 								label: 'Typing Speed (WPM)',
 								field: 'typing_speed',
@@ -450,43 +412,14 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 								required: true,
 								placeholder: 'e.g., 60'
 							})}
-						</div>
-					)}
-
-					{formData.position === 'Manager' && (
-						<div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-							{renderField({
-								label: 'Manager Start Date',
-								field: 'manager_start_date',
-								type: 'date',
-								required: true
-							})}
-							{renderField({
-								label: 'Bonus Payment',
-								field: 'bonus_payment',
-								type: 'number',
-								required: false,
-								placeholder: 'Optional'
-							})}
-							{renderField({
-								label: 'Car Allowance',
-								field: 'car_allowance',
-								type: 'number',
-								required: false,
-								placeholder: 'Optional'
-							})}
-						</div>
-					)}
-
-					{formData.position === 'Supervisor' && (
-						<div className="mt-4">
-							{renderField({
-								label: 'Car Allowance',
-								field: 'car_allowance',
-								type: 'number',
-								required: false,
-								placeholder: 'Optional'
-							})}
+							<a
+								href="https://monkeytype.com/"
+								target="_blank"
+								rel="noreferrer"
+								className="inline-flex items-center text-xs font-semibold text-blue-700 hover:text-blue-900 hover:underline"
+							>
+								Test your typing speed on Monkeytype
+							</a>
 						</div>
 					)}
 				</section>

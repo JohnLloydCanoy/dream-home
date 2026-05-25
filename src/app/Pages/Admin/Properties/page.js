@@ -88,6 +88,8 @@ const propertyTypeOptions = [
 ];
 
 const propertyStatusOptions = [
+    { value: 'Pending Approval', label: 'Pending Approval' },
+    { value: 'Rejected', label: 'Rejected' },
     { value: 'Available', label: 'Available' },
     { value: 'Rented', label: 'Rented' },
     { value: 'Withdrawn', label: 'Withdrawn' }
@@ -133,7 +135,7 @@ function PropertyModal({ isOpen, onClose, onSuccess, itemToEdit }) {
         property_type: itemToEdit?.property_type || '',
         no_of_rooms: itemToEdit?.no_of_rooms || '',
         monthly_rent: itemToEdit?.monthly_rent || '',
-        status: itemToEdit?.status || 'Available',
+        status: itemToEdit?.status || 'Pending Approval',
         owner: toId(itemToEdit?.owner_no || itemToEdit?.owner, 'client_no'),
         branch: toId(itemToEdit?.branch_no || itemToEdit?.branch, 'branch_no'),
         staff_no: toId(itemToEdit?.staff_no || itemToEdit?.staff, 'staff_no'),
@@ -348,6 +350,8 @@ export default function PropertiesPage() {
             label: 'Status',
             render: (value) => {
                 const colors = {
+                    'Pending Approval': 'bg-yellow-100 text-yellow-800',
+                    'Rejected': 'bg-red-100 text-red-800',
                     'Available': 'bg-green-100 text-green-800',
                     'Rented': 'bg-blue-100 text-blue-800',
                     'Withdrawn': 'bg-orange-100 text-orange-800'
@@ -454,6 +458,75 @@ export default function PropertiesPage() {
                     buttonSize="md"
                 />
             )}
+            customActions={(row, handleEditClick, handleDeleteClick) => {
+                const canEdit = rbac?.canEdit ?? true;
+                const canDelete = rbac?.canDelete ?? true;
+                const rowInBranch = rbac?.isOwnBranch ? rbac.isOwnBranch(row) : true;
+                const isPending = row.status === 'Pending Approval';
+
+                const handleApprove = async (e) => {
+                    e.stopPropagation();
+                    try {
+                        await apiClient(`/properties/${row.property_no}/`, {
+                            method: 'PATCH',
+                            body: { status: 'Available' },
+                        });
+                        window.location.reload();
+                    } catch (err) {
+                        console.error('Failed to approve property:', err);
+                        alert('Failed to approve property. Please try again.');
+                    }
+                };
+
+                const handleReject = async (e) => {
+                    e.stopPropagation();
+                    const confirmed = window.confirm(
+                        `Reject property "${row.title || row.property_no}"?\n\nThe owner will see a "Rejected" status and can re-submit after making changes.`
+                    );
+                    if (!confirmed) return;
+                    try {
+                        await apiClient(`/properties/${row.property_no}/`, {
+                            method: 'PATCH',
+                            body: { status: 'Rejected' },
+                        });
+                        window.location.reload();
+                    } catch (err) {
+                        console.error('Failed to reject property:', err);
+                        alert('Failed to reject property. Please try again.');
+                    }
+                };
+
+                return (
+                    <div className="flex justify-end gap-3">
+                        {isPending && canEdit && rowInBranch && (
+                            <>
+                                <button
+                                    onClick={handleApprove}
+                                    className="text-green-600 hover:text-green-900 text-sm font-semibold"
+                                >
+                                    Approve
+                                </button>
+                                <button
+                                    onClick={handleReject}
+                                    className="text-red-500 hover:text-red-800 text-sm font-semibold"
+                                >
+                                    Reject
+                                </button>
+                            </>
+                        )}
+                        {canEdit && rowInBranch && (
+                            <button onClick={(e) => { e.stopPropagation(); handleEditClick(row); }} className="text-blue-600 hover:text-blue-900 text-sm font-semibold">
+                                Edit
+                            </button>
+                        )}
+                        {canDelete && (
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(row); }} className="text-red-600 hover:text-red-900 text-sm font-semibold">
+                                Delete
+                            </button>
+                        )}
+                    </div>
+                );
+            }}
             renderFormModal={({ isOpen, onClose, onSuccess, itemToEdit }) => (
                 <PropertyModal
                     isOpen={isOpen}

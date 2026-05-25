@@ -866,59 +866,6 @@ export default function HiringPortalPage() {
 
     const updateApplicationStage = async (app, nextStage) => {
         try {
-            // If advancing to "Hired" stage, pre-create the staff member to ensure correct salary (especially for Managers)
-            if (nextStage === 'Hired') {
-                try {
-                    const hasNok = app.nok_first_name || app.nok_last_name || app.nok_telephone_no;
-                    const nextOfKin = hasNok ? {
-                        first_name: app.nok_first_name || '',
-                        last_name: app.nok_last_name || '',
-                        middle_name: app.nok_middle_name || '',
-                        suffix: app.nok_suffixes || '',
-                        relationship: app.nok_relationship || '',
-                        address: app.nok_address || '',
-                        telephone_no: app.nok_telephone_no || ''
-                    } : null;
-
-                    const staffPayload = {
-                        email: app.email,
-                        first_name: app.first_name,
-                        last_name: app.last_name,
-                        middle_name: app.middle_name || null,
-                        suffixes: app.suffixes || null,
-                        address: app.address,
-                        telephone_no: app.telephone_no,
-                        sex: app.sex,
-                        dob: app.dob,
-                        nin: app.nin,
-                        position: app.position,
-                        salary: app.position === 'Manager' ? 30000 : 0,
-                        date_joined: app.preferred_start_date,
-                        branch: typeof app.branch === 'object' ? app.branch.branch_no : app.branch,
-                        typing_speed: app.position === 'Secretary' ? (app.typing_speed ? parseInt(app.typing_speed) : null) : null,
-                        manager_start_date: app.position === 'Manager' ? app.preferred_start_date : null,
-                        bonus_payment: null,
-                        car_allowance: null,
-                        supervisor: null,
-                        password: "dreamhome2026"
-                    };
-                    if (nextOfKin) {
-                        staffPayload.next_of_kin = nextOfKin;
-                    }
-
-                    await apiClient('/users/staff/', {
-                        method: 'POST',
-                        body: staffPayload
-                    });
-                } catch (staffError) {
-                    console.log('Staff pre-creation note/error:', staffError);
-                    // If the account already exists, we can proceed. Otherwise, rethrow to show the error
-                    if (!staffError.message?.toLowerCase().includes('already exists')) {
-                        throw staffError;
-                    }
-                }
-            }
-
             const updated = await apiClient(`/users/hiring-applications/${app.id}/`, {
                 method: 'PATCH',
                 body: { stage: nextStage }

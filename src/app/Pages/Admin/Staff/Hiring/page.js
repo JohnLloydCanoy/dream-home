@@ -11,8 +11,6 @@ import { useForm } from '@/hooks/useForm';
 import { useAuth } from '@/hooks/useAuth';
 import { REGEX } from '@/components/functions/RegEx';
 
-const STORAGE_KEY = 'dreamhome_hiring_portal_v1';
-
 const progressStages = ['Applied', 'Screening', 'Interview', 'Offer', 'Hired'];
 const stageOptions = [
 	{ value: 'Applied', label: 'Applied' },
@@ -88,6 +86,12 @@ const applicationValidators = {
 	position: {
 		required: true,
 		label: 'Role'
+	},
+	preferred_start_date: {
+		required: true,
+		label: 'Preferred Start Date',
+		pattern: REGEX.DATE_YYYY_MM_DD,
+		patternMessage: 'Date must be in YYYY-MM-DD format'
 	}
 };
 
@@ -168,7 +172,7 @@ function HiringApplicationModal({
 		stage: itemToEdit?.stage || 'Applied',
 		assigned_manager: itemToEdit?.assigned_manager || currentManager?.staffNo || '',
 		notes: itemToEdit?.notes || '',
-		preferred_start: itemToEdit?.preferred_start || ''
+		preferred_start_date: itemToEdit?.preferred_start_date || ''
 	}, applicationValidators);
 
 	useEffect(() => {
@@ -183,7 +187,7 @@ function HiringApplicationModal({
 			stage: itemToEdit?.stage || 'Applied',
 			assigned_manager: itemToEdit?.assigned_manager || currentManager?.staffNo || '',
 			notes: itemToEdit?.notes || '',
-			preferred_start: itemToEdit?.preferred_start || ''
+			preferred_start_date: itemToEdit?.preferred_start_date || ''
 		});
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isOpen, itemToEdit?.id]);
@@ -207,19 +211,10 @@ function HiringApplicationModal({
 		if (!validate()) return;
 
 		const branchValue = isAdmin ? formData.branch : (branchCode || formData.branch);
-		const managerChoice = managerOptions.find((option) => option.value === formData.assigned_manager);
-		const branchManager = branchManagerMap[branchValue];
-
-		const assignedManagerName = managerChoice?.label
-			|| branchManager?.name
-			|| currentManager?.name
-			|| '';
-
 		onSave({
 			...formData,
 			branch: branchValue,
-			assigned_manager: isManager ? (currentManager?.staffNo || formData.assigned_manager) : formData.assigned_manager,
-			assigned_manager_name: assignedManagerName
+			assigned_manager: isManager ? (currentManager?.staffNo || formData.assigned_manager) : formData.assigned_manager
 		}, itemToEdit);
 	};
 
@@ -343,11 +338,11 @@ function HiringApplicationModal({
 
 						<FormField
 							label="Preferred Start"
-							field="preferred_start"
+							field="preferred_start_date"
 							type="date"
-							value={formData.preferred_start}
+							value={formData.preferred_start_date}
 							onChange={handleFieldChange}
-							required={false}
+							required={true}
 						/>
 					</div>
 				</section>
@@ -402,23 +397,15 @@ export default function HiringPortalPage() {
 		name: user?.fullName || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || staffNo || 'Manager'
 	}), [staffNo, user]);
 
-	useEffect(() => {
-		if (typeof window === 'undefined') return;
-		const stored = localStorage.getItem(STORAGE_KEY);
-		if (stored) {
-			try {
-				const parsed = JSON.parse(stored);
-				if (Array.isArray(parsed)) setApplications(parsed);
-			} catch (error) {
-				console.error('Failed to load hiring applications from storage:', error);
-			}
+	const loadApplications = async () => {
+		try {
+			const data = await apiClient('/users/hiring-applications/');
+			setApplications(normalizeList(data));
+		} catch (error) {
+			console.error('Failed to load hiring applications:', error);
+			setLoadError('Unable to load hiring applications right now.');
 		}
-	}, []);
-
-	useEffect(() => {
-		if (typeof window === 'undefined') return;
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
-	}, [applications]);
+	};
 
 	useEffect(() => {
 		let isMounted = true;
@@ -447,7 +434,7 @@ export default function HiringPortalPage() {
 				})
 			: Promise.resolve();
 
-		Promise.all([loadBranches, loadManagers])
+		Promise.all([loadBranches, loadManagers, loadApplications()])
 			.finally(() => {
 				if (isMounted) setIsLoading(false);
 			});
@@ -530,31 +517,45 @@ export default function HiringPortalPage() {
 		setIsFormOpen(true);
 	};
 
-	const handleSaveApplication = (payload, existing) => {
-		const timestamp = new Date().toISOString();
-		const updatedApplication = {
-			...payload,
-			id: existing?.id || `app_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
-			created_at: existing?.created_at || timestamp,
-			updated_at: timestamp,
-			assigned_manager_name: payload.assigned_manager_name || existing?.assigned_manager_name || ''
-		};
+	const handleSaveApplication = async (payload, existing) => {
+		setLoadError('');
+		try {
+			const method = existing?.id ? 'PATCH' : 'POST';
+			const endpoint = existing?.id
+				? `/users/hiring-applications/${existing.id}/`
+				: '/users/hiring-applications/';
 
-		setApplications((prev) => {
-			if (existing?.id) {
-				return prev.map((item) => item.id === existing.id ? updatedApplication : item);
-			}
-			return [updatedApplication, ...prev];
-		});
+			const { assigned_manager_name: _assignedManagerName, ...safePayload } = payload;
+			const saved = await apiClient(endpoint, {
+				method,
+				body: safePayload
+			});
 
-		setIsFormOpen(false);
+			setApplications((prev) => {
+				if (existing?.id) {
+					return prev.map((item) => item.id === existing.id ? saved : item);
+				}
+				return [saved, ...prev];
+			});
+
+			setIsFormOpen(false);
+		} catch (error) {
+			console.error('Failed to save hiring application:', error);
+			setLoadError('Unable to save hiring application right now.');
+		}
 	};
 
-	const updateApplicationStage = (app, nextStage) => {
-		setApplications((prev) => prev.map((item) => {
-			if (item.id !== app.id) return item;
-			return { ...item, stage: nextStage, updated_at: new Date().toISOString() };
-		}));
+	const updateApplicationStage = async (app, nextStage) => {
+		try {
+			const updated = await apiClient(`/users/hiring-applications/${app.id}/`, {
+				method: 'PATCH',
+				body: { stage: nextStage }
+			});
+			setApplications((prev) => prev.map((item) => item.id === app.id ? updated : item));
+		} catch (error) {
+			console.error('Failed to update hiring stage:', error);
+			setLoadError('Unable to update hiring stage right now.');
+		}
 	};
 
 	const getNextStage = (current) => {

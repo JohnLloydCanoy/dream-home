@@ -57,7 +57,7 @@ export default function CrudPageLayout({
     // Before mount: always fall back to the most restrictive safe defaults to
     // match what the server would render (no auth context available).
     const canCreate = mounted ? (rbac?.canCreate ?? true) : false;
-    const canEdit   = mounted ? (rbac?.canEdit   ?? true) : false;
+    const canEdit = mounted ? (rbac?.canEdit ?? true) : false;
     const canDelete = mounted ? (rbac?.canDelete ?? true) : false;
     const filterByBranch = rbac?.filterByBranch ?? ((data) => data);
 
@@ -239,4 +239,4 @@ export default function CrudPageLayout({
             )}
         </div>
     );
-}
+}

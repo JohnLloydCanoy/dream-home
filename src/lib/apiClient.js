@@ -1,3 +1,5 @@
+import { setTokenCookie, clearTokenCookie } from '@/lib/authService';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
 
@@ -21,12 +23,14 @@ async function refreshAccessToken() {
         // Refresh token is also expired — force logout
         localStorage.removeItem('adminAccessToken');
         localStorage.removeItem('adminRefreshToken');
+        clearTokenCookie();
         window.location.href = '/';
         throw new Error('Session expired. Please log in again.');
     }
 
     const data = await response.json();
     localStorage.setItem('adminAccessToken', data.access);
+    setTokenCookie(data.access);
     return data.access;
 }
 

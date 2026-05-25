@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { clearTokenCookie } from '@/lib/authService';
 
 // Which roles can see each menu
 // "ADMIN"      → superuser, full access
@@ -126,6 +127,7 @@ const ManagementSideBar = () => {
     const handleSignOut = () => {
         localStorage.removeItem('adminAccessToken');
         localStorage.removeItem('adminRefreshToken');
+        clearTokenCookie();
         router.push('/');
     };
 

@@ -197,14 +197,14 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 		setConditionalErrors({});
 
 		let isMounted = true;
-		apiClient('/branches/')
+		apiClient('/branches/', { skipAuth: true })
 			.then((data) => {
 				if (!isMounted) return;
 				setBranches(normalizeList(data));
 			})
 			.catch((error) => {
 				console.error('Failed to load branches:', error);
-				if (isMounted) setLoadError('Unable to load branches right now.');
+				if (isMounted) setLoadError(error?.message || 'Unable to load branches right now.');
 			});
 
 		return () => { isMounted = false; };
@@ -273,7 +273,8 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 
 			const created = await apiClient('/users/hiring-applications/', {
 				method: 'POST',
-				body: payload
+				body: payload,
+				skipAuth: true
 			});
 
 			if (onSubmitted) {
@@ -284,7 +285,7 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 			onClose();
 		} catch (error) {
 			console.error('Failed to submit hiring application:', error);
-			setSubmitError('Unable to submit your application right now. Please try again.');
+			setSubmitError(error?.message || 'Unable to submit your application right now. Please try again.');
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -354,7 +355,7 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 		<Dialog isOpen={isOpen} onClose={onClose} title="Hiring Application">
 			<form onSubmit={handleSubmit} className="space-y-6">
 				{(loadError || submitError) && (
-					<div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
+					<div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 whitespace-pre-line">
 						{loadError || submitError}
 					</div>
 				)}

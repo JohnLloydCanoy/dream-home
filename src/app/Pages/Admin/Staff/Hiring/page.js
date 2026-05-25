@@ -34,6 +34,13 @@ const managerRoleOptions = [
     { value: 'Secretary', label: 'Secretary' }
 ];
 
+const roleSalaryMinimums = {
+    Manager: 30000,
+    Supervisor: 22000,
+    Secretary: 15000,
+    Staff: 12000
+};
+
 const stageBadgeStyles = {
     Applied: 'bg-blue-50 text-blue-700',
     Screening: 'bg-indigo-50 text-indigo-700',
@@ -268,7 +275,7 @@ function HiringApplicationModal({
         nin: itemToEdit?.nin || '',
         branch: resolvedBranch,
         position: itemToEdit?.position || (roleOptions[0]?.value || ''),
-        salary: itemToEdit?.salary || '',
+        salary: itemToEdit?.salary ?? '',
         stage: itemToEdit?.stage || 'Applied',
         assigned_manager: itemToEdit?.assigned_manager || currentManager?.staffNo || '',
         notes: itemToEdit?.notes || '',
@@ -299,7 +306,7 @@ function HiringApplicationModal({
             nin: itemToEdit?.nin || '',
             branch: itemToEdit?.branch || branchCode || '',
             position: itemToEdit?.position || (roleOptions[0]?.value || ''),
-            salary: itemToEdit?.salary || '',
+            salary: itemToEdit?.salary ?? '',
             stage: itemToEdit?.stage || 'Applied',
             assigned_manager: itemToEdit?.assigned_manager || currentManager?.staffNo || '',
             notes: itemToEdit?.notes || '',
@@ -341,6 +348,17 @@ function HiringApplicationModal({
             nextErrors.typing_speed = 'Typing speed is required for secretarial applicants.';
         }
 
+        const minSalary = roleSalaryMinimums[formData.position];
+        if (minSalary) {
+            const rawSalary = cleanValue(formData.salary);
+            const numericSalary = rawSalary === null ? NaN : Number(rawSalary);
+            if (!Number.isFinite(numericSalary)) {
+                nextErrors.salary = 'Salary is required.';
+            } else if (numericSalary < minSalary) {
+                nextErrors.salary = `Salary must be at least ${minSalary}.`;
+            }
+        }
+
         setConditionalErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
     };
@@ -364,6 +382,7 @@ function HiringApplicationModal({
             sex: cleanValue(formData.sex),
             dob: cleanValue(formData.dob),
             nin: cleanValue(formData.nin),
+            salary: cleanValue(formData.salary),
             typing_speed: formData.position === 'Secretary' ? cleanValue(formData.typing_speed) : null,
             nok_first_name: cleanValue(formData.nok_first_name),
             nok_last_name: cleanValue(formData.nok_last_name),
@@ -526,7 +545,7 @@ function HiringApplicationModal({
                             type="number"
                             value={formData.salary}
                             onChange={handleFieldChange}
-                            error={errors.salary}
+                            error={errors.salary || conditionalErrors.salary}
                             placeholder={formData.position === 'Manager' ? 'Min: 30000' : 'Enter amount'}
                         />
 

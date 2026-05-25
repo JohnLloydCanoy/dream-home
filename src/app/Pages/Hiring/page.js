@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
 import FormField from '@/components/ui/FormField';
 import Button from '@components/ui/Button';
 import DataTable from '@/components/ui/DataTable';
@@ -136,8 +137,11 @@ export default function HiringTrackingPage() {
 	]), []);
 
 	return (
-		<div className="w-full max-w-5xl mx-auto space-y-6">
+		<div className="w-full max-w-5xl mx-auto space-y-6 mt-8">
 			<div>
+				<Link href="/" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#E11553] mb-4 transition-colors">
+					&larr; Back to Login
+				</Link>
 				<h1 className="text-3xl font-bold text-gray-900">Application Tracking</h1>
 				<p className="text-sm text-gray-500 mt-1">
 					Check the status of your DreamHome hiring application.

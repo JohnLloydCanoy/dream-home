@@ -8,8 +8,6 @@ import apiClient from '@/lib/apiClient';
 import { useForm } from '@/hooks/useForm';
 import { REGEX } from '@/components/functions/RegEx';
 
-const STORAGE_KEY = 'dreamhome_hiring_portal_v1';
-
 const positionOptions = [
 	{ value: 'Staff', label: 'Standard Staff' },
 	{ value: 'Supervisor', label: 'Supervisor' },
@@ -89,7 +87,7 @@ const applicationValidators = {
 		patternMessage: 'Only letters, numbers, and hyphens allowed'
 	},
 	position: { required: true, maxLength: 50, label: 'Position' },
-	date_joined: {
+	preferred_start_date: {
 		required: true,
 		label: 'Preferred Start Date',
 		pattern: REGEX.DATE_YYYY_MM_DD,
@@ -119,7 +117,7 @@ const applicationValidators = {
 		pattern: REGEX.NAME,
 		patternMessage: 'Only letters, spaces, hyphens, and apostrophes allowed'
 	},
-	nok_suffix: { maxLength: 10, label: 'Next of Kin Suffix' },
+	nok_suffixes: { maxLength: 10, label: 'Next of Kin Suffix' },
 	nok_relationship: {
 		maxLength: 100,
 		label: 'Relationship',
@@ -152,14 +150,14 @@ const initialState = {
 	dob: '',
 	nin: '',
 	position: 'Staff',
-	date_joined: '',
+	preferred_start_date: '',
 	branch: '',
 	typing_speed: '',
 	notes: '',
 	nok_first_name: '',
 	nok_last_name: '',
 	nok_middle_name: '',
-	nok_suffix: '',
+	nok_suffixes: '',
 	nok_relationship: '',
 	nok_address: '',
 	nok_telephone_no: ''
@@ -179,27 +177,6 @@ const buildBranchLabel = (branch) => {
 const cleanValue = (value) => {
 	const trimmed = String(value || '').trim();
 	return trimmed.length ? trimmed : null;
-};
-
-const buildNextOfKin = (data) => {
-	const payload = {
-		first_name: cleanValue(data.nok_first_name),
-		last_name: cleanValue(data.nok_last_name),
-		middle_name: cleanValue(data.nok_middle_name),
-		suffix: cleanValue(data.nok_suffix),
-		relationship: cleanValue(data.nok_relationship),
-		address: cleanValue(data.nok_address),
-		telephone_no: cleanValue(data.nok_telephone_no)
-	};
-
-	const hasAny = Object.values(payload).some((value) => value !== null);
-	return hasAny ? payload : null;
-};
-
-const saveToStorage = (record) => {
-	const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-	const updated = [record, ...existing];
-	localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 };
 
 export default function HiringModal({ isOpen, onClose, onSubmitted }) {
@@ -269,11 +246,7 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 		setIsSubmitting(true);
 
 		try {
-			const nextOfKin = buildNextOfKin(formData);
-			const now = new Date().toISOString();
-
-			const record = {
-				id: `app_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
+			const payload = {
 				first_name: cleanValue(formData.first_name),
 				last_name: cleanValue(formData.last_name),
 				middle_name: cleanValue(formData.middle_name),
@@ -285,23 +258,26 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 				dob: cleanValue(formData.dob),
 				nin: cleanValue(formData.nin),
 				position: cleanValue(formData.position),
-				date_joined: cleanValue(formData.date_joined),
-				preferred_start: cleanValue(formData.date_joined),
+				preferred_start_date: cleanValue(formData.preferred_start_date),
 				branch: cleanValue(formData.branch),
 				typing_speed: formData.position === 'Secretary' ? cleanValue(formData.typing_speed) : null,
 				notes: cleanValue(formData.notes),
-				next_of_kin: nextOfKin,
-				stage: 'Applied',
-				assigned_manager: null,
-				assigned_manager_name: '',
-				created_at: now,
-				updated_at: now
+				nok_first_name: cleanValue(formData.nok_first_name),
+				nok_last_name: cleanValue(formData.nok_last_name),
+				nok_middle_name: cleanValue(formData.nok_middle_name),
+				nok_suffixes: cleanValue(formData.nok_suffixes),
+				nok_relationship: cleanValue(formData.nok_relationship),
+				nok_address: cleanValue(formData.nok_address),
+				nok_telephone_no: cleanValue(formData.nok_telephone_no)
 			};
 
-			saveToStorage(record);
+			const created = await apiClient('/users/hiring-applications/', {
+				method: 'POST',
+				body: payload
+			});
 
 			if (onSubmitted) {
-				onSubmitted(record);
+				onSubmitted(created);
 			}
 
 			reset(initialState);
@@ -335,14 +311,14 @@ export default function HiringModal({ isOpen, onClose, onSubmitted }) {
 	const employmentFields = [
 		{ label: 'Position Applied', field: 'position', type: 'select', options: positionOptions },
 		{ label: 'Preferred Branch', field: 'branch', type: 'select', options: branchOptions },
-		{ label: 'Preferred Start Date', field: 'date_joined', type: 'date' }
+		{ label: 'Preferred Start Date', field: 'preferred_start_date', type: 'date' }
 	];
 
 	const nextOfKinFields = [
 		{ label: 'First Name', field: 'nok_first_name', required: false },
 		{ label: 'Last Name', field: 'nok_last_name', required: false },
 		{ label: 'Middle Name', field: 'nok_middle_name', required: false },
-		{ label: 'Suffix', field: 'nok_suffix', required: false },
+		{ label: 'Suffix', field: 'nok_suffixes', required: false },
 		{ label: 'Relationship', field: 'nok_relationship', required: false },
 		{ label: 'Address', field: 'nok_address', required: false },
 		{ label: 'Telephone No.', field: 'nok_telephone_no', required: false }
